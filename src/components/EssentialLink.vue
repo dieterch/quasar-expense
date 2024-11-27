@@ -2,7 +2,7 @@
   <q-item
     clickable
     tag="a"
-    target="_blank"
+    notarget="_blank"
     :href="props.link"
   >
     <q-item-section
