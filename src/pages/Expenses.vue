@@ -7,7 +7,7 @@
           title="Trip Expenses"
           dense
           flat
-          :rows="rows"
+          :rows="filteredexpenses"
           :columns="columns"
           row-key="id"
           separator="horizontal"
@@ -15,6 +15,17 @@
           :pagination="initialPagination"
           hide-pagination
           >
+          <template v-slot:top>
+            <div style="margin: 20px 0px 15px 13px;" @click="router.push('/trips')">
+              <div v-if="selectedTrip">
+                <b>Selected Trip: </b><span class="selected-trip">{{ selectedTrip.name }}</span>
+              </div>
+              <div v-else>
+                <b>Selected Trip: </b><span class="selected-trip">-</span>
+              </div>
+            </div>
+          </template>
+
           <template v-slot:body-cell-category="props">
             <q-td :props="props">
               <div class="row">
@@ -34,21 +45,14 @@
             </q-td>
           </template>
 
-          <!--template v-slot:bottom-row>
-            <q-tr>
-              <q-td colspan="100%">
-                Bottom Row
-              </q-td>
-            </q-tr>
-          </template-->
         </q-table>
       </div>
     </div>
     <div v-if="debug">
       <h4>Rows:</h4>
-      <pre>{{ rows }}</pre>
+      <pre>{{ storeExpense.expensesRows }}</pre>
       <h4>Expenses:</h4>
-      <pre>{{ expenses }}</pre>
+      <pre>{{ storeExpense.expenses }}</pre>
     </div>
 
     <q-page-sticky position="bottom-left" :offset="[18, 18]">
@@ -67,22 +71,30 @@ defineOptions({
   name: "ExpensesPage",
 });
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive } from "vue";
 // import { api } from "boot/axios";
 import { useQuasar } from "quasar";
+import { useRouter } from 'vue-router'
 import { useExpenseStore } from 'stores/expense-store';
 import { storeToRefs } from 'pinia';
-const storeExpense = useExpenseStore()
 
+const storeExpense = useExpenseStore()
 const $q = useQuasar()
-// const expenses = ref([])
-const rows = ref([]);
+const router = useRouter()
+
+const filteredexpenses = ref([]);
 const debug = ref(false);
+
+const selectedTrip = reactive({
+  id: 0,
+  name: "",
+});
 
 onMounted(async () => {
   await storeExpense.fetchExpenses()
-  rows.value = storeExpense.filteredExpensesRows("04e1aa8a-80fa-45e6-ae83-7036de0a401f")
-  console.log(rows.value)
+  const localdata = $q.localStorage.getItem('selectedTrip')
+  if (localdata) Object.assign(selectedTrip, localdata)
+  filteredexpenses.value = storeExpense.filteredExpensesRows(localdata.id)
 });
 
 const columns = [
@@ -181,5 +193,11 @@ const editExpense = (item) => {
   white-space: normal;
   color: #555;
   margin-top: 4px;
+}
+
+.selected-trip {
+  background-color: rgb(207, 207, 207);
+  margin-left: 10px;
+  padding: 8px;
 }
 </style>

@@ -30,6 +30,12 @@ const tHelper = (list) => {
     let d = {
       id: row.id,
       name: row.name,
+      rawdate: row.startDate,
+      date: new Date(row.startDate).toLocaleDateString("de-CA", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }),
       participants: row.users.map(item => item.user.name).join(", "),
       noExpenses: row.expenses.length || 0,
     };
