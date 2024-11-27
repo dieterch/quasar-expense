@@ -19,7 +19,7 @@
     <div class="col-12">
       <q-list>
         <div v-for="trip in trips">
-        <q-item>
+        <q-item clickable>
           <q-item-section>
             <q-item-label class="text-h6" >{{ trip.name }}</q-item-label>
             <q-item-label caption lines="2">{{ new Date(trip.startDate).toLocaleDateString("de-CA", {year:"numeric", month: "2-digit", day:"2-digit"})}},  Participants:

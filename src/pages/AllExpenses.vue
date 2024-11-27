@@ -4,16 +4,14 @@
     <div class="row">
       <div class="col-12">
         <q-table
-          title="Trip Expenses"
+          title="All Expenses"
           dense
-          flat
           :rows="rows"
           :columns="columns"
           row-key="id"
           separator="horizontal"
           :sort-method="customSort"
           :pagination="initialPagination"
-          hide-pagination
           >
           <template v-slot:body-cell-category="props">
             <q-td :props="props">
@@ -29,18 +27,17 @@
             <q-td :props="props">
               <div class="q-gutter-md">
                 <q-btn round icon="delete" size="sm" class="bg-indigo-2" @click="deleteExpense(props.row)" />
-                <q-btn round icon="edit_note" class="bg-indigo-2" size="sm" @click="editExpense(props.row)" />
               </div>
             </q-td>
           </template>
 
-          <!--template v-slot:bottom-row>
+          <template v-slot:bottom-row>
             <q-tr>
               <q-td colspan="100%">
                 Bottom Row
               </q-td>
             </q-tr>
-          </template-->
+          </template>
         </q-table>
       </div>
     </div>
@@ -53,10 +50,9 @@
 
     <q-page-sticky position="bottom-left" :offset="[18, 18]">
       <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="8px">
-        <q-fab-action @click="onClick" color="indigo" icon="add" />
         <q-fab-action @click="onClick" color="indigo" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="indigo" icon="bug_report"/>
-        <q-fab-action @click="onClick" color="indigo" icon="refresh" />
+        <q-fab-action @click="refresh" color="indigo" icon="refresh" />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -64,7 +60,7 @@
 
 <script setup>
 defineOptions({
-  name: "ExpensesPage",
+  name: "AllExpensesPage",
 });
 
 import { ref, onMounted } from "vue";
@@ -81,8 +77,8 @@ const debug = ref(false);
 
 onMounted(async () => {
   await storeExpense.fetchExpenses()
-  rows.value = storeExpense.filteredExpensesRows("04e1aa8a-80fa-45e6-ae83-7036de0a401f")
-  console.log(rows.value)
+  //rows.value = storeExpense.filteredExpensesRows("04e1aa8a-80fa-45e6-ae83-7036de0a401f")
+  rows.value = storeExpense.expensesRows
 });
 
 const columns = [
@@ -94,6 +90,7 @@ const columns = [
     field: "date",
     sortable: true,
   },
+  { name: "trip", align: "left", label: "Trip", field: "trip", sortable: true },
   {
     name: "category",
     align: "left",
@@ -124,7 +121,7 @@ const initialPagination = {
   sortBy: "date",
   descending: true,
   page: 1,
-  rowsPerPage: 0,
+  rowsPerPage: 20,
   // rowsNumber: xx if getting data from a server
 };
 
@@ -163,14 +160,10 @@ const deleteExpense = (item) => {
   console.log(item);
 };
 
-const editExpense = (item) => {
-  $q.dialog({
-        title: 'Edit',
-        message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
-        html: true
-      })
-  console.log(item);
-};
+const refresh = () => {
+  storeExpense.fetchExpenses()
+}
+
 </script>
 
 <style>

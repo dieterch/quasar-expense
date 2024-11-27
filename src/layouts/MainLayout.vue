@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="hhh lpr fff">
-    <q-header elevated>
+  <q-layout view="hHh Lpr fFf">
+    <q-header elevated class="bg-indigo-4">
       <q-toolbar>
         <q-btn
           flat
@@ -53,9 +53,9 @@ defineOptions({
 
 const linksList = [
   {
-    title: 'Home',
-    caption: 'Home Page',
-    icon: 'home',
+    title: 'Trip Expenses',
+    caption: 'Trip Expenses Page',
+    icon: 'payments',
     link: '#'
   },
   {
@@ -80,53 +80,9 @@ const linksList = [
     title: 'All Expenses',
     caption: 'All Expenses Page',
     icon: 'account_balance_wallet',
-    link: '#/expenses'
+    link: '#/allexpenses'
   }
 ]
-// const linksList = [
-//   {
-//     title: 'Docs',
-//     caption: 'quasar.dev',
-//     icon: 'school',
-//     link: 'https://quasar.dev'
-//   },
-//   {
-//     title: 'Github',
-//     caption: 'github.com/quasarframework',
-//     icon: 'code',
-//     link: 'https://github.com/quasarframework'
-//   },
-//   {
-//     title: 'Discord Chat Channel',
-//     caption: 'chat.quasar.dev',
-//     icon: 'chat',
-//     link: 'https://chat.quasar.dev'
-//   },
-//   {
-//     title: 'Forum',
-//     caption: 'forum.quasar.dev',
-//     icon: 'record_voice_over',
-//     link: 'https://forum.quasar.dev'
-//   },
-//   {
-//     title: 'Twitter',
-//     caption: '@quasarframework',
-//     icon: 'rss_feed',
-//     link: 'https://twitter.quasar.dev'
-//   },
-//   {
-//     title: 'Facebook',
-//     caption: '@QuasarFramework',
-//     icon: 'public',
-//     link: 'https://facebook.quasar.dev'
-//   },
-//   {
-//     title: 'Quasar Awesome',
-//     caption: 'Community Quasar projects',
-//     icon: 'favorite',
-//     link: 'https://awesome.quasar.dev'
-//   }
-// ]
 
 const leftDrawerOpen = ref(false)
 
