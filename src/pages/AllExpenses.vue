@@ -5,7 +5,8 @@
       <div class="col-12">
         <q-table
           dense
-          :rows="rows"
+          flat
+          :rows="expenses"
           :columns="columns"
           row-key="id"
           separator="horizontal"
@@ -102,51 +103,19 @@ import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { useExpenseStore } from "stores/expense-store";
 import { storeToRefs } from "pinia";
-const storeExpense = useExpenseStore();
 
+const storeExpense = useExpenseStore();
 const $q = useQuasar();
-// const expenses = ref([])
-const rows = ref([]);
+
+const expenses = ref([]);
+const columns = ref([]);
 const debug = ref(false);
 
 onMounted(async () => {
   await storeExpense.fetchExpenses();
-  //rows.value = storeExpense.filteredExpensesRows("04e1aa8a-80fa-45e6-ae83-7036de0a401f")
-  rows.value = storeExpense.expensesRows;
+  expenses.value = storeExpense.expensesRows;
+  columns.value = storeExpense.allexpansesColumns;
 });
-
-const columns = [
-  // { name: 'id', align: 'center', label: 'ID', field: 'id', sortable: true },
-  {
-    name: "date",
-    align: "center",
-    label: "Date",
-    field: "date",
-    style: 'max-width: 50px',
-    sortable: true,
-  },
-  {
-    name: "trip",
-    align: "left",
-    label: "Trip",
-    field: "trip",
-    style: 'max-width: 150px',
-    sortable: true,
-  },
-  {
-    name: "expense",
-    align: "right",
-    label: "Expense",
-    field: "amount",
-    format: (val) => `${val} €`,
-    sortable: true,
-  },
-  {
-    name: "actions",
-    align: "center",
-    label: "Actions",
-  },
-];
 
 const initialPagination = {
   sortBy: "date",

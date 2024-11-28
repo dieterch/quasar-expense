@@ -89,6 +89,7 @@ const $q = useQuasar()
 const router = useRouter()
 
 const filteredexpenses = ref([]);
+const columns = ref([])
 const debug = ref(false);
 
 const selectedTrip = reactive({
@@ -101,40 +102,8 @@ onMounted(async () => {
   const localdata = $q.localStorage.getItem('selectedTrip')
   if (localdata) Object.assign(selectedTrip, localdata)
   filteredexpenses.value = storeExpense.filteredExpensesRows(localdata.id)
+  columns.value = storeExpense.tripexpensesColumns
 });
-
-const columns = [
-  // { name: 'id', align: 'center', label: 'ID', field: 'id', sortable: true },
-  {
-    name: "date",
-    align: "center",
-    label: "Date",
-    field: "date",
-    style: 'max-width: 50px',
-    sortable: true,
-  },
-  {
-    name: "description",
-    align: "left",
-    label: "Description",
-    field: "description",
-    style: 'max-width: 150px',
-    sortable: true,
-  },
-  {
-    name: "expense",
-    align: "right",
-    label: "Expense",
-    field: "amount",
-    format: (val) => `${val} €`,
-    sortable: true,
-  },
-  {
-    name: "actions",
-    align: "center",
-    label: "Actions"
-  },
-];
 
 const initialPagination = {
   sortBy: "date",
