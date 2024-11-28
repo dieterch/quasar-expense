@@ -4,7 +4,6 @@
     <div class="row">
       <div class="col-12">
         <q-table
-          title="All Expenses"
           dense
           :rows="rows"
           :columns="columns"
@@ -12,7 +11,26 @@
           separator="horizontal"
           :sort-method="customSort"
           :pagination="initialPagination"
-          >
+        >
+          <template v-slot:body-cell-trip="props">
+            <q-td :props="props">
+              <q-item>
+                <!--q-item-section side>
+                  <q-icon :name="props.row.categoryIcon" size="xs"></q-icon>
+                </q-item-section-->
+                <q-item-section>
+                  <q-item-label lines="2"><q-icon :name="props.row.categoryIcon" size="xs" class="q-pr-xs"></q-icon>{{ props.row.description }}</q-item-label>
+                  <q-item-label caption lines="1">{{
+                    props.row.trip
+                  }}</q-item-label>
+                  <q-item-label caption lines="2"
+                    >Payed by {{ props.row.user }}</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-category="props">
             <q-td :props="props">
               <div class="row">
@@ -26,16 +44,20 @@
           <template v-slot:body-cell-actions="props">
             <q-td :props="props">
               <div class="q-gutter-md">
-                <q-btn round icon="delete" size="sm" class="bg-indigo-2" @click="deleteExpense(props.row)" />
+                <q-btn
+                  round
+                  icon="delete"
+                  size="sm"
+                  class="bg-indigo-2"
+                  @click="deleteExpense(props.row)"
+                />
               </div>
             </q-td>
           </template>
 
           <template v-slot:bottom-row>
             <q-tr>
-              <q-td colspan="100%">
-                Bottom Row
-              </q-td>
+              <q-td colspan="100%"> Bottom Row </q-td>
             </q-tr>
           </template>
         </q-table>
@@ -48,10 +70,22 @@
       <pre>{{ expenses }}</pre>
     </div>
 
-    <q-page-sticky position="bottom-left" :offset="[18, 18]">
-      <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="8px">
+    <q-page-sticky position="bottom" :offset="[18, 18]">
+      <q-fab
+        icon="add_circle"
+        direction="up"
+        color="indigo"
+        class="bg-indigo-2"
+        style="opacity: 70%"
+        flat
+        padding="10px"
+      >
         <q-fab-action @click="onClick" color="indigo" icon="mdi-file-excel" />
-        <q-fab-action @click="debug = !debug" color="indigo" icon="bug_report"/>
+        <q-fab-action
+          @click="debug = !debug"
+          color="indigo"
+          icon="bug_report"
+        />
         <q-fab-action @click="refresh" color="indigo" icon="refresh" />
       </q-fab>
     </q-page-sticky>
@@ -66,19 +100,19 @@ defineOptions({
 import { ref, onMounted } from "vue";
 // import { api } from "boot/axios";
 import { useQuasar } from "quasar";
-import { useExpenseStore } from 'stores/expense-store';
-import { storeToRefs } from 'pinia';
-const storeExpense = useExpenseStore()
+import { useExpenseStore } from "stores/expense-store";
+import { storeToRefs } from "pinia";
+const storeExpense = useExpenseStore();
 
-const $q = useQuasar()
+const $q = useQuasar();
 // const expenses = ref([])
 const rows = ref([]);
 const debug = ref(false);
 
 onMounted(async () => {
-  await storeExpense.fetchExpenses()
+  await storeExpense.fetchExpenses();
   //rows.value = storeExpense.filteredExpensesRows("04e1aa8a-80fa-45e6-ae83-7036de0a401f")
-  rows.value = storeExpense.expensesRows
+  rows.value = storeExpense.expensesRows;
 });
 
 const columns = [
@@ -88,21 +122,15 @@ const columns = [
     align: "center",
     label: "Date",
     field: "date",
-    sortable: true,
-  },
-  { name: "trip", align: "left", label: "Trip", field: "trip", sortable: true },
-  {
-    name: "category",
-    align: "left",
-    label: "Cat",
-    field: "category",
+    style: 'max-width: 50px',
     sortable: true,
   },
   {
-    name: "description",
+    name: "trip",
     align: "left",
-    label: "Description",
-    field: "description",
+    label: "Trip",
+    field: "trip",
+    style: 'max-width: 150px',
     sortable: true,
   },
   {
@@ -113,15 +141,18 @@ const columns = [
     format: (val) => `${val} €`,
     sortable: true,
   },
-  { name: "user", align: "left", label: "User", field: "user", sortable: true },
-  { name: "actions", align: "right", label: "Actions" },
+  {
+    name: "actions",
+    align: "center",
+    label: "Actions",
+  },
 ];
 
 const initialPagination = {
   sortBy: "date",
   descending: true,
   page: 1,
-  rowsPerPage: 20,
+  rowsPerPage: 8,
   // rowsNumber: xx if getting data from a server
 };
 
@@ -138,8 +169,8 @@ const customSort = (rows, sortBy, descending) => {
         return new Date(x["rawdate"]) > new Date(y["rawdate"])
           ? 1
           : new Date(x["rawdate"]) < new Date(y["rawdate"])
-            ? -1
-            : 0;
+          ? -1
+          : 0;
       } else if (sortBy === "expense") {
         return parseFloat(x["amount"]) - parseFloat(y["amount"]);
       } else {
@@ -153,17 +184,16 @@ const customSort = (rows, sortBy, descending) => {
 
 const deleteExpense = (item) => {
   $q.dialog({
-        title: 'Delete',
-        message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
-        html: true
-      })
+    title: "Delete",
+    message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
+    html: true,
+  });
   console.log(item);
 };
 
 const refresh = () => {
-  storeExpense.fetchExpenses()
-}
-
+  storeExpense.fetchExpenses();
+};
 </script>
 
 <style>

@@ -10,6 +10,7 @@
           :columns="columns"
           row-key="id"
           separator="horizontal"
+          bordered
           :sort-method="customSort"
           :pagination="initialPagination"
           hide-pagination
@@ -17,7 +18,7 @@
           >
           <template v-slot:top>
 
-          <div style="margin: 20px 0px 15px 13px;">
+          <div style="margin: 20px 0px 15px 13px;" @click="goToExpense">
             <div v-if="selectedTrip">
               <b>Selected Trip: </b><span class="selected-trip">{{ selectedTrip.name }}</span>
             </div>
@@ -28,11 +29,23 @@
 
           </template>
 
+          <template v-slot:body-cell-name="props">
+            <q-td :props="props" auto-width>
+              <q-item>
+                <q-item-section>
+                  <q-item-label>{{ props.row.name }}</q-item-label>
+                  <q-item-label caption lines="2">{{ props.row.participants }}</q-item-label>
+
+                </q-item-section>
+              </q-item>
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-actions="props">
             <q-td :props="props">
               <div class="q-gutter-md">
-                <q-btn round icon="delete" size="sm" class="bg-indigo-2" @click="deleteExpense(props.row)" />
-                <q-btn round icon="edit_note" class="bg-indigo-2" size="sm" @click="editExpense(props.row)" />
+                <q-btn round icon="delete" size="sm" class="bg-indigo-2" @click.stop="deleteExpense(props.row)" />
+                <q-btn round icon="edit_note" class="bg-indigo-2" size="sm" @click.stop="editExpense(props.row)" />
               </div>
             </q-td>
           </template>
@@ -46,8 +59,8 @@
       <pre>{{ storeExpense.trips }}</pre>
     </div>
 
-    <q-page-sticky position="bottom-left" :offset="[18, 18]">
-      <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="8px">
+    <q-page-sticky position="bottom" :offset="[18, 18]">
+      <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="10px">
         <q-fab-action @click="onClick" color="indigo" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="indigo" icon="bug_report"/>
         <q-fab-action @click="refresh" color="indigo" icon="refresh" />
@@ -100,24 +113,35 @@ const columns = [
     align: "center",
     label: "Start Date",
     field: "date",
+    style: 'max-width: 50px',
     sortable: true,
   },
-  { name: "name", align: "left", label: "Trip Name", field: "name", sortable: true },
   {
-    name: "participants",
+    name: "name",
     align: "left",
-    label: "Participants",
-    field: "participants",
-    sortable: true,
+    label: "Trip Name",
+    field: "name",
+    style: 'max-width: 150px',
+    sortable: true
   },
+  // {
+  //   name: "participants",
+  //   align: "left",
+  //   label: "Participants",
+  //   field: "participants",
+  //   sortable: true,
+  // },
   {
     name: "noexpenses",
-    align: "left",
+    align: "center",
     label: "Expenses",
     field: "noExpenses",
     sortable: true,
   },
-  { name: "actions", align: "right", label: "Actions" },
+  {
+    name: "actions",
+    align: "center",
+    label: "Actions" },
 ];
 
 const initialPagination = {
@@ -188,6 +212,10 @@ const rowclick = (e, row, index) => {
   //     })
   selectedTrip.name = row.name
   selectedTrip.id = row.id
+  router.push('/')
+}
+
+const goToExpense = () => {
   router.push('/')
 }
 

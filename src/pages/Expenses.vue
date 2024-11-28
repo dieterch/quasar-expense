@@ -13,12 +13,13 @@
           separator="horizontal"
           :sort-method="customSort"
           :pagination="initialPagination"
-          hide-pagination
+          bordered
+          nothide-pagination
           >
           <template v-slot:top>
             <div style="margin: 20px 0px 15px 13px;" @click="router.push('/trips')">
               <div v-if="selectedTrip">
-                <b>Selected Trip: </b><span class="selected-trip">{{ selectedTrip.name }}</span>
+            <b>Selected Trip: </b><span class="selected-trip">{{ selectedTrip.name }}</span>
               </div>
               <div v-else>
                 <b>Selected Trip: </b><span class="selected-trip">-</span>
@@ -26,13 +27,18 @@
             </div>
           </template>
 
-          <template v-slot:body-cell-category="props">
+          <template v-slot:body-cell-description="props">
             <q-td :props="props">
-              <div class="row">
-                <div>
-                  <q-icon :name="props.row.categoryIcon" size="xs"></q-icon>
-                </div>
-              </div>
+              <q-item>
+                <!--q-item-section side>
+                      <q-icon :name="props.row.categoryIcon" size="xs"></q-icon>
+                </q-item-section-->
+                <q-item-section>
+                  <q-item-label lines="2"><q-icon :name="props.row.categoryIcon" size="xs" class="q-pr-xs"></q-icon>{{ props.row.description }}</q-item-label>
+                  <q-item-label caption lines="2">Payed by {{ props.row.user }}</q-item-label>
+
+                </q-item-section>
+              </q-item>
             </q-td>
           </template>
 
@@ -55,8 +61,8 @@
       <pre>{{ storeExpense.expenses }}</pre>
     </div>
 
-    <q-page-sticky position="bottom-left" :offset="[18, 18]">
-      <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="8px">
+    <q-page-sticky position="bottom" :offset="[18, 18]">
+      <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="10px">
         <q-fab-action @click="onClick" color="indigo" icon="add" />
         <q-fab-action @click="onClick" color="indigo" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="indigo" icon="bug_report"/>
@@ -104,13 +110,7 @@ const columns = [
     align: "center",
     label: "Date",
     field: "date",
-    sortable: true,
-  },
-  {
-    name: "category",
-    align: "left",
-    label: "Cat",
-    field: "category",
+    style: 'max-width: 50px',
     sortable: true,
   },
   {
@@ -118,6 +118,7 @@ const columns = [
     align: "left",
     label: "Description",
     field: "description",
+    style: 'max-width: 150px',
     sortable: true,
   },
   {
@@ -128,15 +129,18 @@ const columns = [
     format: (val) => `${val} €`,
     sortable: true,
   },
-  { name: "user", align: "left", label: "User", field: "user", sortable: true },
-  { name: "actions", align: "right", label: "Actions" },
+  {
+    name: "actions",
+    align: "center",
+    label: "Actions"
+  },
 ];
 
 const initialPagination = {
   sortBy: "date",
   descending: true,
   page: 1,
-  rowsPerPage: 0,
+  rowsPerPage: 10,
   // rowsNumber: xx if getting data from a server
 };
 
