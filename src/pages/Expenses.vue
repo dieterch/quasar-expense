@@ -98,10 +98,10 @@ const selectedTrip = reactive({
 });
 
 onMounted(async () => {
-  await storeExpense.fetchExpenses()
   const localdata = $q.localStorage.getItem('selectedTrip')
   if (localdata) Object.assign(selectedTrip, localdata)
-  filteredexpenses.value = storeExpense.filteredExpensesRows(localdata.id)
+  await storeExpense.fetchfilteredexpenses(localdata.id)
+  filteredexpenses.value = storeExpense.expensesRows
   columns.value = storeExpense.tripexpensesColumns
 });
 

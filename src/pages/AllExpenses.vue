@@ -13,6 +13,11 @@
           :sort-method="customSort"
           :pagination="initialPagination"
         >
+
+          <template v-slot:top>
+            <div style="height: 30px;"></div>
+          </template>
+
           <template v-slot:body-cell-trip="props">
             <q-td :props="props">
               <q-item>

@@ -125,26 +125,35 @@ export const useExpenseStore = defineStore("expense", () => {
     expenses.value = response.data;
   };
 
+  const fetchfilteredexpenses = async (tripid) => {
+    // console.log(`fetchfilterexpenses(${tripid})`)
+    const response = await api.post("/api/tripexpenses",{
+      id: tripid,
+      headers: { "Content-Type": "application/json" },
+    })
+    expenses.value = response.data
+  }
+
   // getter: transform expenses to rows
   const expensesRows = computed(() => {
     return expenses.value ? eHelper(expenses.value) : [];
   });
 
-  // getter: filter expenses with trip id in frontend
-  const filteredExpenses = computed(() => {
-    return (id) => {
-      if (expenses.value) {
-        return expenses.value.filter((e) => e.tripId == id);
-      }
-    };
-  });
+  // // getter: filter expenses with trip id in frontend
+  // const filteredExpenses = computed(() => {
+  //   return (id) => {
+  //     if (expenses.value) {
+  //       return expenses.value.filter((e) => e.tripId == id);
+  //     }
+  //   };
+  // });
 
-  // getter: filter expenses with trip id in frontend and transform to rows
-  const filteredExpensesRows = computed(() => {
-    return (id) => {
-      return expenses.value ? eHelper(filteredExpenses.value(id)) : [];
-    };
-  });
+  // // getter: filter expenses with trip id in frontend and transform to rows
+  // const filteredExpensesRows = computed(() => {
+  //   return (id) => {
+  //     return expenses.value ? eHelper(filteredExpenses.value(id)) : [];
+  //   };
+  // });
 
   // trips part
   // ----------
@@ -165,14 +174,19 @@ export const useExpenseStore = defineStore("expense", () => {
   return {
     // Expenses
     fetchExpenses,
+    fetchfilteredexpenses,
     expenses,
     expensesRows,
+
+    // getters for fileterd expenses ... ?!
+    // filteredExpenses,
+    // filteredExpensesRows,
+
+    // column definitions
     tripexpensesColumns,
     allexpansesColumns,
 
     // Trips
-    filteredExpenses,
-    filteredExpensesRows,
     fetchTrips,
     trips,
     tripsRows,

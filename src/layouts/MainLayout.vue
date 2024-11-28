@@ -81,6 +81,12 @@ const linksList = [
     caption: 'All Expenses Page',
     icon: 'account_balance_wallet',
     link: '#/allexpenses'
+  },
+  {
+    title: 'Test',
+    caption: 'Test Page',
+    icon: 'javascript',
+    link: '#/test'
   }
 ]
 
