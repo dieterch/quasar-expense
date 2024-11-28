@@ -2,9 +2,9 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { api } from "boot/axios";
 
-// Helper Functions:
-// -----------------
-
+// ----------------
+// Helper Functions
+// ----------------
 // expenses: transform a complex list of records from the databas to a flat list of records compatible with Q-Table
 const eHelper = (list) => {
   let rows = [];
@@ -21,8 +21,10 @@ const eHelper = (list) => {
       categoryIcon: row.category.icon,
       category: row.category.name,
       description: row.description,
+      currency: row.currency,
       amount: row.amount.toFixed(2),
       user: row.user.name,
+      userId: row.user.id
     };
     rows.push(d);
   });
@@ -50,12 +52,16 @@ const tHelper = (list) => {
   return rows;
 };
 
-// Store:
+// ------
+// Store
 // ------
 export const useExpenseStore = defineStore("expense", () => {
-  // expenses part
-  // -------------
-  const expenses = ref();
+
+
+
+// --------
+// expenses
+// --------
   const tripexpensesColumns = ref(
     [{
         name: "date",
@@ -119,14 +125,22 @@ export const useExpenseStore = defineStore("expense", () => {
       }]
   )
 
-  // action: load all expense data from api
-  const fetchExpenses = async () => {
+  // data:
+  const expenses = ref();
+
+  // getter: transform expenses to rows
+  const expensesRows = computed(() => {
+    return expenses.value ? eHelper(expenses.value) : [];
+  });
+
+  // action: load all expenses from database
+  const getExpenses = async () => {
     const response = await api.get("/api/expenses");
     expenses.value = response.data;
   };
 
-  const fetchfilteredexpenses = async (tripid) => {
-    // console.log(`fetchfilterexpenses(${tripid})`)
+  // action: load filtered expenses from database
+  const postTripExpenses = async (tripid) => {
     const response = await api.post("/api/tripexpenses",{
       id: tripid,
       headers: { "Content-Type": "application/json" },
@@ -134,10 +148,15 @@ export const useExpenseStore = defineStore("expense", () => {
     expenses.value = response.data
   }
 
-  // getter: transform expenses to rows
-  const expensesRows = computed(() => {
-    return expenses.value ? eHelper(expenses.value) : [];
-  });
+  // action: create or update database row
+  const requestExpenses = async ( method, payload ) => {
+    const response = await api.request('/api/expenses', {
+        method: method,
+        data: payload,
+        headers: { "Content-Type": "application/json" },
+    })
+    // user has to reload database to update data
+  }
 
   // // getter: filter expenses with trip id in frontend
   // const filteredExpenses = computed(() => {
@@ -155,15 +174,15 @@ export const useExpenseStore = defineStore("expense", () => {
   //   };
   // });
 
-  // trips part
+  // ----------
+  // trips
   // ----------
   const trips = ref();
 
   // action: load all trips from api
-  const fetchTrips = async () => {
+  const getTrips = async () => {
     const response = await api.get("/api/trips");
     trips.value = response.data;
-    // return expenses.value
   };
 
   // getter: transform trips to rows
@@ -171,10 +190,44 @@ export const useExpenseStore = defineStore("expense", () => {
     return trips.value ? tHelper(trips.value) : [];
   });
 
+  // ----------
+  // categories
+  // ----------
+  const categories = ref();
+
+  // action: load all categories from api
+  const getCategories = async () => {
+    const response = await api.get("/api/categories");
+    categories.value = response.data;
+  };
+
+
+  // ---------
+  // user
+  // ---------
+  const users = ref();
+
+  // action: load all users from api
+  const getUsers = async () => {
+    const response = await api.get("/api/users");
+    users.value = response.data;
+  };
+
+  // action: load filtered expenses from database
+  const postTripUsers = async (tripid) => {
+    const response = await api.post("/api/tripusers",{
+      id: tripid,
+      headers: { "Content-Type": "application/json" },
+    })
+    users.value = response.data
+  }
+
+
   return {
     // Expenses
-    fetchExpenses,
-    fetchfilteredexpenses,
+    getExpenses,
+    postTripExpenses,
+    requestExpenses,
     expenses,
     expensesRows,
 
@@ -187,8 +240,17 @@ export const useExpenseStore = defineStore("expense", () => {
     allexpansesColumns,
 
     // Trips
-    fetchTrips,
+    getTrips,
     trips,
     tripsRows,
+
+    // Categories
+    getCategories,
+    categories,
+
+    // Users
+    getUsers,
+    postTripUsers,
+    users
   };
 });

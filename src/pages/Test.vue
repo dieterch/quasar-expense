@@ -27,7 +27,7 @@ const selectedTrip = reactive({
 
 const fetchfilteredexpense = async(id) => {
   console.log("call fetch mit:", id)
-  await storeExpense.fetchfilteredexpenses(id)
+  await storeExpense.postTripExpenses(id)
   expenses.value = storeExpense.expenses
 }
 

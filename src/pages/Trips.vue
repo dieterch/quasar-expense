@@ -44,8 +44,8 @@
           <template v-slot:body-cell-actions="props">
             <q-td :props="props">
               <div class="q-gutter-md">
-                <q-btn round icon="delete" size="sm" class="bg-indigo-2" @click.stop="deleteExpense(props.row)" />
-                <q-btn round icon="edit_note" class="bg-indigo-2" size="sm" @click.stop="editExpense(props.row)" />
+                <q-btn round icon="delete" size="sm" class="bg-primary-2" @click.stop="deleteExpense(props.row)" />
+                <q-btn round icon="edit_note" class="bg-primary-2" size="sm" @click.stop="editExpense(props.row)" />
               </div>
             </q-td>
           </template>
@@ -60,10 +60,10 @@
     </div>
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
-      <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="10px">
-        <q-fab-action @click="onClick" color="indigo" icon="mdi-file-excel" />
-        <q-fab-action @click="debug = !debug" color="indigo" icon="bug_report"/>
-        <q-fab-action @click="refresh" color="indigo" icon="refresh" />
+      <q-fab icon="add_circle" direction="up" color="primary" class="bg-primary-2" style="opacity: 70%;" flat padding="10px">
+        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
+        <q-fab-action @click="debug = !debug" color="primary" icon="bug_report"/>
+        <q-fab-action @click="refresh" color="primary" icon="refresh" />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -101,7 +101,7 @@ watch(selectedTrip, value => {
 })
 
 onMounted(async () => {
-  await storeExpense.fetchTrips()
+  await storeExpense.getTrips()
   //rows.value = storeExpense.filteredExpensesRows("04e1aa8a-80fa-45e6-ae83-7036de0a401f")
   tripsRows.value = storeExpense.tripsRows
 });

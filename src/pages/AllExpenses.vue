@@ -54,7 +54,7 @@
                   round
                   icon="delete"
                   size="sm"
-                  class="bg-indigo-2"
+                  class="bg-tertiary"
                   @click="deleteExpense(props.row)"
                 />
               </div>
@@ -80,19 +80,19 @@
       <q-fab
         icon="add_circle"
         direction="up"
-        color="indigo"
-        class="bg-indigo-2"
+        color="primary"
+        class="bg-primary-2"
         style="opacity: 70%"
         flat
         padding="10px"
       >
-        <q-fab-action @click="onClick" color="indigo" icon="mdi-file-excel" />
+        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action
           @click="debug = !debug"
-          color="indigo"
+          color="primary"
           icon="bug_report"
         />
-        <q-fab-action @click="refresh" color="indigo" icon="refresh" />
+        <q-fab-action @click="refresh" color="primary" icon="refresh" />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -117,7 +117,7 @@ const columns = ref([]);
 const debug = ref(false);
 
 onMounted(async () => {
-  await storeExpense.fetchExpenses();
+  await storeExpense.getExpenses();
   expenses.value = storeExpense.expensesRows;
   columns.value = storeExpense.allexpansesColumns;
 });

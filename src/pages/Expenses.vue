@@ -3,6 +3,20 @@
   <q-page>
     <div class="row">
       <div class="col-12">
+        <ExpensesDialog
+            :dialog="isExpenseDialogOpen"
+            :key="isExpenseDialogOpen"
+            :mode="emode"
+            :item="eitem"
+            :selectedTrip="selectedTrip"
+            @refresh="tripChanged"
+            @dialog="(e)=>{isExpenseDialogOpen = e}"
+        />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
         <q-table
           title="Trip Expenses"
           dense
@@ -45,8 +59,8 @@
           <template v-slot:body-cell-actions="props">
             <q-td :props="props">
               <div class="q-gutter-md">
-                <q-btn round icon="delete" size="sm" class="bg-indigo-2" @click="deleteExpense(props.row)" />
-                <q-btn round icon="edit_note" class="bg-indigo-2" size="sm" @click="editExpense(props.row)" />
+                <q-btn round icon="delete" size="sm" class="bg-primary-2" @click="deleteExpense(props.row)" />
+                <q-btn round icon="edit_note" class="bg-primary-2" size="sm" @click="openExpenseDialog('update',props.row)" />
               </div>
             </q-td>
           </template>
@@ -62,11 +76,11 @@
     </div>
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
-      <q-fab icon="add_circle" direction="up" color="indigo" class="bg-indigo-2" style="opacity: 70%;" flat padding="10px">
-        <q-fab-action @click="onClick" color="indigo" icon="add" />
-        <q-fab-action @click="onClick" color="indigo" icon="mdi-file-excel" />
-        <q-fab-action @click="debug = !debug" color="indigo" icon="bug_report"/>
-        <q-fab-action @click="onClick" color="indigo" icon="refresh" />
+      <q-fab icon="add_circle" direction="up" color="primary" class="bg-primary-2" style="opacity: 70%;" flat padding="10px">
+        <q-fab-action @click="openExpenseDialog('add', {})" color="primary" icon="add" />
+        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
+        <q-fab-action @click="debug = !debug" color="primary" icon="bug_report"/>
+        <q-fab-action @click="onClick" color="primary" icon="refresh" />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -78,12 +92,15 @@ defineOptions({
 });
 
 import { ref, onMounted, reactive } from "vue";
-// import { api } from "boot/axios";
+import ExpensesDialog from 'components/ExpensesDialog.vue'
 import { useQuasar } from "quasar";
 import { useRouter } from 'vue-router'
 import { useExpenseStore } from 'stores/expense-store';
 import { storeToRefs } from 'pinia';
 
+const isExpenseDialogOpen = ref(false)
+const emode = ref('')
+const eitem = ref({})
 const storeExpense = useExpenseStore()
 const $q = useQuasar()
 const router = useRouter()
@@ -100,7 +117,7 @@ const selectedTrip = reactive({
 onMounted(async () => {
   const localdata = $q.localStorage.getItem('selectedTrip')
   if (localdata) Object.assign(selectedTrip, localdata)
-  await storeExpense.fetchfilteredexpenses(localdata.id)
+  await storeExpense.postTripExpenses(localdata.id)
   filteredexpenses.value = storeExpense.expensesRows
   columns.value = storeExpense.tripexpensesColumns
 });
@@ -156,6 +173,19 @@ const editExpense = (item) => {
       })
   console.log(item);
 };
+
+  // Open Expenses Dialog, add or update database row
+  const openExpenseDialog = (mode, item) => {
+    // $q.dialog({
+    //     title: 'Update',
+    //     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
+    //     html: true
+    //   })
+    emode.value = mode
+    eitem.value = item
+    isExpenseDialogOpen.value = true
+  }
+
 </script>
 
 <style>
