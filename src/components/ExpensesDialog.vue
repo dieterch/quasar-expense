@@ -1,25 +1,6 @@
 <template>
   <q-dialog v-model="ldialog">
-    <!--q-card style="width: 700px; max-width: 80vw;">
-        <q-card-section>
-          <div class="text-h6">{{ modeis('add') ? 'Add Expense' : 'Update Expense' }}</div>
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-            <pre>{{  props }}</pre>
-        </q-card-section>
-
-        <q-card-actions align="right" class="bg-white text-teal">
-          <q-btn flat label="Cancel" v-close-popup />
-          <q-btn flat label="OK" v-close-popup />
-        </q-card-actions>
-      </q-card-->
-
-    <!--div class="q-pa-md" style="max-width: 400px"-->
-    <q-card class="q-pa-md" style="width: 500px; max-width: 80vw">
+    <q-card class="q-pa-md" style="width: 480px; max-width: 80vw">
       <q-card-section>
         <div class="text-h6">
           {{ modeis("add") ? "Add Expense" : "Update Expense" }}
@@ -27,13 +8,8 @@
       </q-card-section>
       <q-form
         ref="expenseForm"
-        @validation-success="debugme"
-        @validation-error="debugme"
-        no-v-model="isFormValid"
-        no-lazy-validation
-        @submit="onSubmit"
-        @reset="onReset"
         class="q-gutter-md"
+        @submit.prevent="onSubmit"
       >
         <div class="row">
           <div class="col-6">
@@ -43,23 +19,38 @@
               v-model="lexpense.description"
               label="Title*"
               lazy-rules
-              required
               :rules="[(v) => !!v || 'Description is required']"
             />
           </div>
 
+
+
+
           <div class="col q-ml-md">
             <q-select
-              v-model="lexpense.categoryId"
+              v-model="lexpense.category"
               dense
               label="Category"
               :options="dialogcategories"
-              option-label="name"
-              option-value="id"
+              nooption-label="name"
+              nooption-value="id"
               filled
-              required
-              :rules="[(v) => !!v || 'required']"
+              :rules="[(v) => !!v || 'Category is required']"
+              use-chips
             >
+              <template v-slot:selected-item="scope">
+                <q-chip
+                  square
+                  dense
+                  @remove="scope.removeAtIndex(scope.index)"
+                  :tabindex="scope.tabindex"
+                  noclass="q-ma-none q-pl-md"
+                  :label="scope.opt.name"
+                  :icon = "scope.opt.icon"
+                  style=" background: transparent;"
+                />
+              </template>
+
               <template v-slot:option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section avatar side>
@@ -73,8 +64,6 @@
             </q-select>
           </div>
         </div>
-
-        <!-- Currency Dropdown -->
         <div class="row">
           <div class="col-4">
             <q-select
@@ -85,12 +74,9 @@
               option-label="symbol"
               option-value="symbol"
               label="Currency"
-              required
-              :rules="[(v) => !!v || 'required']"
+              :rules="[(v) => !!v || 'Currency is required']"
             />
           </div>
-
-          <!-- Amount Input -->
           <div class="col q-ml-md">
             <q-input
               filled
@@ -98,14 +84,11 @@
               v-model="lexpense.amount"
               type="number"
               label="Amount"
-              required
               :rules="[(v) => !!v || 'Amount is required']"
             />
           </div>
         </div>
-
         <div class="row">
-          <!-- User Dropdown -->
           <div class="col-4">
             <q-select
               filled
@@ -115,27 +98,20 @@
               option-label="name"
               option-value="id"
               label="User"
-              required
               :rules="[(v) => !!v || 'User is required']"
             />
           </div>
-
           <div class="col q-ml-md" style="max-width: 300px">
             <q-input
               filled
               dense
               v-model="lexpense.date"
-              nomask="date"
-              :norules="['date']"
+              label="Date"
               :rules="[(v) => !!v || 'Date is required']"
             >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                     <q-date
                       v-model="lexpense.date"
                       mask="DD.MM.YYYY"
@@ -143,12 +119,8 @@
                       :subtitle="lexpense.date"
                       >
                       <div class="row items-center justify-end">
-                        <q-btn
-                          v-close-popup
-                          label="Close"
-                          color="primary"
-                          flat
-                        />
+                        <q-btn v-close-popup label="Ok" color="primary" flat />
+                        <q-btn v-close-popup label="Close" color="primary" flat />
                       </div>
                     </q-date>
                   </q-popup-proxy>
@@ -157,7 +129,6 @@
             </q-input>
           </div>
         </div>
-
         <q-card-actions align="right" class="bg-white text-teal">
           <q-btn
             v-if="modeis('add')"
@@ -165,24 +136,26 @@
             type="submit"
             color="primary"
             :disabled="!isFormValid"
-            v-close-popup />
+          />
           <q-btn
             v-if="modeis('update')"
             label="Update"
             type="submit"
             color="primary"
             :disabled="!isFormValid"
-            v-close-popup />
+          />
           <q-btn
             label="Close"
             type="reset"
             color="primary"
             flat
             class="q-ml-sm"
-            v-close-popup />
+            @click="onReset"
+          />
         </q-card-actions>
+        <pre>{{ lexpense }}</pre>
+        <pre>{{ props.item }}</pre>
       </q-form>
-      <pre>{{ dialogusers }}</pre>
     </q-card>
   </q-dialog>
 
@@ -206,7 +179,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { date } from 'quasar'
 import { useExpenseStore } from "stores/expense-store";
 const storeExpense = useExpenseStore();
@@ -214,23 +187,30 @@ const storeExpense = useExpenseStore();
 const props = defineProps(["selectedTrip", "dialog", "mode", "item"]);
 const emit = defineEmits(["refresh", "dialog"]);
 
-const expenseForm = ref(null);
-const debugme = (e) => {
-  console.log(e)
-}
-
-const isFormValid = ref(false);
+// Dropdown data
 const dialogcategories = ref([]);
-const dialogusers = ref([]);
-const lexpense = ref({})
+// from ChatGTP
+const getCategoryIcon = (category) => {
+  if (!category) return ""; // Fallback if no category is selected
+  return category.icon || "help_outline"; // Replace with a default icon if needed
+};
 
-// const lexpense = ref({
-//   amount: null,
-//   currency: "€",
-//   // date:  ref(new Date()),
-//   location: "",
-//   description: "",
-// });
+const dialogusers = ref([]);
+const currencies = [
+  { name: "USD", symbol: "$", factor: 0.92 },
+  { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
+];
+
+// Form reference
+const expenseForm = ref(null);
+
+// Mode toggle
+// const isAddMode = (props.mode === 'add');
+const modeis = (e) => props.mode === e;
+
+
+// Form validity tracker
+const isFormValid = ref(false);
 
 // Helper for determining dialog visibility and mode
 const ldialog = computed({
@@ -238,7 +218,13 @@ const ldialog = computed({
   set: (value) => emit("dialog", value),
 });
 
-const modeis = (e) => props.mode === e;
+// Form data
+const lexpense = ref({})
+
+// Watch form fields to validate dynamically
+watch(lexpense, async () => {
+  isFormValid.value = await expenseForm.value.validate();
+}, { deep: true });
 
 // Reset Form
 const resetForm = async () => {
@@ -251,17 +237,10 @@ const resetForm = async () => {
   };
 };
 
-// currencies seed =>
-// it would make sense to transfer this table to the database.
-const currencies = [
-  { name: "USD", symbol: "$", factor: 0.92 },
-  { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
-];
-
 // Fetch Data on Mount
 onMounted(async () => {
   await storeExpense.postTripUsers(props.selectedTrip.id);
-  dialogusers.value = storeExpense.users;
+  dialogusers.value = storeExpense.users.map((item) => item.user );
 
   await storeExpense.getCategories();
   dialogcategories.value = storeExpense.categories.map((item) => {
@@ -284,7 +263,11 @@ onMounted(async () => {
         currency: props.item.currency,
         date: date.formatDate(new Date(props.item.date),'DD.MM.YYYY'),
         location: props.item.location,
-        // categoryId: props.item.categoryId,
+        category: {
+          id: props.item.categoryId,
+          name: props.item.categoryName,
+          icon: props.item.categoryIcon
+        },
         description: props.item.description,
         tripId: props.item.tripId,
         user: props.item.user,
@@ -294,6 +277,31 @@ onMounted(async () => {
   }
 });
 
+// Form submission handler
+const onSubmit = async () => {
+  if (isFormValid.value) {
+    console.log('Form is valid:', lexpense.value);
+    // Perform your submit logic here
+  } else {
+    console.log('Form is invalid.');
+  }
+};
+
+// Reset form
+const onReset = () => {
+  lexpense.value = {
+    description: '',
+    category: null,
+    currency: null,
+    amount: null,
+    user: null,
+    date: '',
+  };
+  expenseForm.value.resetValidation();
+  isFormValid.value = false;
+};
+
+/////////////////////////////////////////
 const handleForm = async (method) => {
   if (!isFormValid.value) return;
 

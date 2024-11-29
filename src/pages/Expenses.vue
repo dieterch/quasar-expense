@@ -76,7 +76,7 @@
     </div>
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
-      <q-fab icon="add_circle" direction="up" color="primary" class="bg-primary-2" style="opacity: 70%;" flat padding="10px">
+      <q-fab icon="add_circle" direction="up" color="primary" class="bg-primary-2" nostyle="opacity: 70%;" padding="10px">
         <q-fab-action @click="openExpenseDialog('add', {})" color="primary" icon="add" />
         <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="primary" icon="bug_report"/>
