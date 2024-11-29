@@ -19,7 +19,7 @@
       </q-card-->
 
     <!--div class="q-pa-md" style="max-width: 400px"-->
-    <q-card class="q-pa-md" style="width: 700px; max-width: 80vw">
+    <q-card class="q-pa-md" style="width: 500px; max-width: 80vw">
       <q-card-section>
         <div class="text-h6">
           {{ modeis("add") ? "Add Expense" : "Update Expense" }}
@@ -27,8 +27,10 @@
       </q-card-section>
       <q-form
         ref="expenseForm"
-        v-model="isFormValid"
-        lazy-validation
+        @validation-success="debugme"
+        @validation-error="debugme"
+        no-v-model="isFormValid"
+        no-lazy-validation
         @submit="onSubmit"
         @reset="onReset"
         class="q-gutter-md"
@@ -74,7 +76,7 @@
 
         <!-- Currency Dropdown -->
         <div class="row">
-          <div class="col-3">
+          <div class="col-4">
             <q-select
               filled
               dense
@@ -112,7 +114,7 @@
               :options="dialogusers"
               option-label="name"
               option-value="id"
-              label="Select User"
+              label="User"
               required
               :rules="[(v) => !!v || 'User is required']"
             />
@@ -123,8 +125,9 @@
               filled
               dense
               v-model="lexpense.date"
-              mask="date"
-              :rules="['date']"
+              nomask="date"
+              :norules="['date']"
+              :rules="[(v) => !!v || 'Date is required']"
             >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -133,7 +136,12 @@
                     transition-show="scale"
                     transition-hide="scale"
                   >
-                    <q-date v-model="date">
+                    <q-date
+                      v-model="lexpense.date"
+                      mask="DD.MM.YYYY"
+                      title="Expense Date"
+                      :subtitle="lexpense.date"
+                      >
                       <div class="row items-center justify-end">
                         <q-btn
                           v-close-popup
@@ -152,118 +160,34 @@
 
         <q-card-actions align="right" class="bg-white text-teal">
           <q-btn
-            label="Cancel"
+            v-if="modeis('add')"
+            label="Add"
+            type="submit"
+            color="primary"
+            :disabled="!isFormValid"
+            v-close-popup />
+          <q-btn
+            v-if="modeis('update')"
+            label="Update"
+            type="submit"
+            color="primary"
+            :disabled="!isFormValid"
+            v-close-popup />
+          <q-btn
+            label="Close"
             type="reset"
             color="primary"
             flat
             class="q-ml-sm"
-          />
-          <q-btn label="Ok" type="submit" color="primary" />
+            v-close-popup />
         </q-card-actions>
       </q-form>
+      <pre>{{ dialogusers }}</pre>
     </q-card>
   </q-dialog>
-  <v-dialog v-model="ldialog" width="500px">
-    <v-card>
-      <v-card-title>{{
-        modeis("add") ? "Add Expense" : "Update Expense"
-      }}</v-card-title>
-      <v-card-text>
-        <pre v-if="false">{{ props.item }}</pre>
-        <v-form ref="expenseForm" v-model="isFormValid" lazy-validation>
-          <v-row dense>
-            <!-- Description Input -->
-            <v-col cols="12" md="8" sm="12">
-              <v-text-field
-                density="compact"
-                v-model="lexpense.description"
-                label="Title*"
-                placeholder="brief description of the expense"
-                required
-                :rules="[(v) => !!v || 'Description is required']"
-              ></v-text-field>
-            </v-col>
 
-            <!-- Category Dropdown -->
-            <v-col cols="12" md="4" sm="6">
-              <v-select
-                density="compact"
-                v-model="lexpense.categoryId"
-                :items="dialogcategories"
-                label="Category"
-                item-title="name"
-                item-value="id"
-                required
-                :rules="[(v) => !!v || 'required']"
-              >
-                <template v-slot:item="{ props, item }">
-                  <v-list-item v-bind="props">
-                    <v-avatar :icon="item.raw.icon"></v-avatar>
-                  </v-list-item>
-                </template>
-              </v-select>
-            </v-col>
-
-            <!-- Currency Dropdown -->
-            <v-col cols="12" md="3" sm="4">
-              <v-select
-                density="compact"
-                v-model="lexpense.currency"
-                :items="currencies"
-                item-title="symbol"
-                item-value="symbol"
-                nolabel="Currency"
-                required
-                :rules="[(v) => !!v || 'required']"
-              ></v-select>
-            </v-col>
-
-            <!-- Amount Input -->
-            <v-col cols="12" md="9" sm="12">
-              <v-text-field
-                density="compact"
-                v-model="lexpense.amount"
-                type="number"
-                label="Amount"
-                required
-                :rules="[(v) => !!v || 'Amount is required']"
-              ></v-text-field>
-            </v-col>
-
-            <!-- User Dropdown -->
-            <v-col cols="12" md="6" sm="12">
-              <v-select
-                density="compact"
-                v-model="lexpense.userId"
-                :items="props.selectedTrip.users"
-                item-title="user.name"
-                item-value="user.id"
-                label="Select User"
-                required
-                :rules="[(v) => !!v || 'User is required']"
-              ></v-select>
-            </v-col>
-
-            <!-- Date Input -->
-            <v-col cols="12" md="6" sm="12">
-              <v-date-input
-                density="compact"
-                v-model="lexpense.date"
-                label="Expense Date"
-                required
-                :rules="[(v) => !!v || 'Date is required']"
-              ></v-date-input>
-            </v-col>
-          </v-row>
-
-          <small class="text-caption text-medium-emphasis"
-            >*indicates required field</small
-          >
-        </v-form>
-      </v-card-text>
-      <v-divider></v-divider>
+    <!--
       <v-card-actions>
-        <v-spacer></v-spacer>
         <v-btn
           v-if="modeis('add')"
           text="Add"
@@ -278,29 +202,35 @@
         />
         <v-btn text="Close" @click="closeDialog" />
       </v-card-actions>
-    </v-card>
-  </v-dialog>
+    -->
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { date } from 'quasar'
 import { useExpenseStore } from "stores/expense-store";
 const storeExpense = useExpenseStore();
 
 const props = defineProps(["selectedTrip", "dialog", "mode", "item"]);
 const emit = defineEmits(["refresh", "dialog"]);
 
+const expenseForm = ref(null);
+const debugme = (e) => {
+  console.log(e)
+}
+
 const isFormValid = ref(false);
 const dialogcategories = ref([]);
 const dialogusers = ref([]);
+const lexpense = ref({})
 
-const lexpense = ref({
-  amount: null,
-  currency: "€",
-  date: new Date(),
-  location: "",
-  description: "",
-});
+// const lexpense = ref({
+//   amount: null,
+//   currency: "€",
+//   // date:  ref(new Date()),
+//   location: "",
+//   description: "",
+// });
 
 // Helper for determining dialog visibility and mode
 const ldialog = computed({
@@ -313,10 +243,11 @@ const modeis = (e) => props.mode === e;
 // Reset Form
 const resetForm = async () => {
   lexpense.value = {
-    ...lexpense.value,
-    amount: null,
-    date: new Date(),
-    description: "",
+    // ...lexpense.value,
+    // amount: null,
+    currency: "€",
+    date: date.formatDate(new Date(),'DD.MM.YYYY'),
+    // description: "",
   };
 };
 
@@ -329,7 +260,7 @@ const currencies = [
 
 // Fetch Data on Mount
 onMounted(async () => {
-  await storeExpense.getUsers();
+  await storeExpense.postTripUsers(props.selectedTrip.id);
   dialogusers.value = storeExpense.users;
 
   await storeExpense.getCategories();
@@ -347,13 +278,13 @@ onMounted(async () => {
       break;
     case "update":
       lexpense.value = {
-        ...lexpense.value,
+        // ...lexpense.value,
         id: props.item.id,
         amount: props.item.amount,
         currency: props.item.currency,
-        date: new Date(props.item.rawdate),
+        date: date.formatDate(new Date(props.item.date),'DD.MM.YYYY'),
         location: props.item.location,
-        categoryId: props.item.categoryId,
+        // categoryId: props.item.categoryId,
         description: props.item.description,
         tripId: props.item.tripId,
         user: props.item.user,

@@ -1,5 +1,6 @@
-import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import { defineStore } from "pinia";
+import { date } from 'quasar'
 import { api } from "boot/axios";
 
 // ----------------
@@ -12,11 +13,12 @@ const eHelper = (list) => {
     let d = {
       id: row.id,
       rawdate: row.date,
-      date: new Date(row.date).toLocaleDateString("de-CA", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }),
+      date: row.date,
+      // date: new Date(row.date).toLocaleDateString("de-CA", {
+      //   year: "numeric",
+      //   month: "2-digit",
+      //   day: "2-digit",
+      // }),
       trip: row.trip.name,
       categoryIcon: row.category.icon,
       category: row.category.name,
@@ -68,6 +70,8 @@ export const useExpenseStore = defineStore("expense", () => {
         align: "center",
         label: "Date",
         field: "date",
+        // date.formatDate(timeStamp, 'YYYY-MM-DDTHH:mm:ss.SSSZ')
+        format: (val) => `${date.formatDate(new Date(val),'DD.MM.YY')}`,
         style: "max-width: 50px",
         sortable: true,
       },
@@ -158,6 +162,7 @@ export const useExpenseStore = defineStore("expense", () => {
     // user has to reload database to update data
   }
 
+  // i leave this examples for getters with argumens
   // // getter: filter expenses with trip id in frontend
   // const filteredExpenses = computed(() => {
   //   return (id) => {
