@@ -72,7 +72,7 @@ export const useExpenseStore = defineStore("expense", () => {
         label: "Date",
         field: "date",
         // date.formatDate(timeStamp, 'YYYY-MM-DDTHH:mm:ss.SSSZ')
-        format: (val) => `${date.formatDate(new Date(val),'DD.MM.YY')}`,
+        format: (val) => `${date.formatDate(new Date(val),'DD.MM.YYYY')}`,
         style: "max-width: 50px",
         sortable: true,
       },
@@ -104,6 +104,7 @@ export const useExpenseStore = defineStore("expense", () => {
         align: "center",
         label: "Date",
         field: "date",
+        format: (val) => `${date.formatDate(new Date(val),'DD.MM.YYYY')}`,
         style: 'max-width: 50px',
         sortable: true,
       },

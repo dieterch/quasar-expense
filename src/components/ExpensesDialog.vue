@@ -1,5 +1,8 @@
 <template>
-  <q-dialog v-model="ldialog">
+  <q-dialog
+    v-model="ldialog"
+    @show="validate"
+  >
     <q-card class="q-pa-md" style="width: 480px; max-width: 80vw">
       <q-card-section>
         <div class="text-h6">
@@ -20,11 +23,9 @@
               label="Title*"
               lazy-rules
               :rules="[(v) => !!v || 'Description is required']"
+              @blur="validate"
             />
           </div>
-
-
-
 
           <div class="col q-ml-md">
             <q-select
@@ -37,6 +38,7 @@
               filled
               :rules="[(v) => !!v || 'Category is required']"
               use-chips
+              @blur="validate"
             >
               <template v-slot:selected-item="scope">
                 <q-chip
@@ -75,6 +77,7 @@
               option-value="symbol"
               label="Currency"
               :rules="[(v) => !!v || 'Currency is required']"
+              @blur="validate"
             />
           </div>
           <div class="col q-ml-md">
@@ -85,6 +88,7 @@
               type="number"
               label="Amount"
               :rules="[(v) => !!v || 'Amount is required']"
+              @blur="validate"
             />
           </div>
         </div>
@@ -99,6 +103,7 @@
               option-value="id"
               label="User"
               :rules="[(v) => !!v || 'User is required']"
+              @blur="validate"
             />
           </div>
           <div class="col q-ml-md" style="max-width: 300px">
@@ -108,6 +113,7 @@
               v-model="lexpense.date"
               label="Date"
               :rules="[(v) => !!v || 'Date is required']"
+              @blur="validate"
             >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -151,36 +157,18 @@
             flat
             class="q-ml-sm"
             @click="onReset"
+            v-close-popup
           />
         </q-card-actions>
-        <pre>{{ lexpense }}</pre>
-        <pre>{{ props.item }}</pre>
       </q-form>
     </q-card>
   </q-dialog>
-
-    <!--
-      <v-card-actions>
-        <v-btn
-          v-if="modeis('add')"
-          text="Add"
-          @click="handleForm('POST')"
-          :disabled="!isFormValid"
-        />
-        <v-btn
-          v-if="modeis('update')"
-          text="Update"
-          @click="handleForm('PUT')"
-          :disabled="!isFormValid"
-        />
-        <v-btn text="Close" @click="closeDialog" />
-      </v-card-actions>
-    -->
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { date } from 'quasar'
+const { extractDate } = date // extract only the function you need => enables tree shaking
 import { useExpenseStore } from "stores/expense-store";
 const storeExpense = useExpenseStore();
 
@@ -189,12 +177,6 @@ const emit = defineEmits(["refresh", "dialog"]);
 
 // Dropdown data
 const dialogcategories = ref([]);
-// from ChatGTP
-const getCategoryIcon = (category) => {
-  if (!category) return ""; // Fallback if no category is selected
-  return category.icon || "help_outline"; // Replace with a default icon if needed
-};
-
 const dialogusers = ref([]);
 const currencies = [
   { name: "USD", symbol: "$", factor: 0.92 },
@@ -221,10 +203,10 @@ const ldialog = computed({
 // Form data
 const lexpense = ref({})
 
-// Watch form fields to validate dynamically
-watch(lexpense, async () => {
+const validate = async () => {
+  console.log('in validate')
   isFormValid.value = await expenseForm.value.validate();
-}, { deep: true });
+}
 
 // Reset Form
 const resetForm = async () => {
@@ -239,8 +221,10 @@ const resetForm = async () => {
 
 // Fetch Data on Mount
 onMounted(async () => {
-  await storeExpense.postTripUsers(props.selectedTrip.id);
-  dialogusers.value = storeExpense.users.map((item) => item.user );
+  if (props.selectedTrip.id != 0) {
+    await storeExpense.postTripUsers(props.selectedTrip.id);
+    dialogusers.value = storeExpense.users.map((item) => item.user );
+  }
 
   await storeExpense.getCategories();
   dialogcategories.value = storeExpense.categories.map((item) => {
@@ -253,7 +237,8 @@ onMounted(async () => {
 
   switch (props.mode) {
     case "add":
-      resetForm();
+      onReset();
+      //resetForm();
       break;
     case "update":
       lexpense.value = {
@@ -261,6 +246,7 @@ onMounted(async () => {
         id: props.item.id,
         amount: props.item.amount,
         currency: props.item.currency,
+
         date: date.formatDate(new Date(props.item.date),'DD.MM.YYYY'),
         location: props.item.location,
         category: {
@@ -282,6 +268,7 @@ const onSubmit = async () => {
   if (isFormValid.value) {
     console.log('Form is valid:', lexpense.value);
     // Perform your submit logic here
+    await handleForm(modeis('add') ? 'POST':'PUT')
   } else {
     console.log('Form is invalid.');
   }
@@ -292,10 +279,10 @@ const onReset = () => {
   lexpense.value = {
     description: '',
     category: null,
-    currency: null,
     amount: null,
     user: null,
-    date: '',
+    currency: "€",
+    date: date.formatDate(new Date(),'DD.MM.YYYY'),
   };
   expenseForm.value.resetValidation();
   isFormValid.value = false;
@@ -304,36 +291,33 @@ const onReset = () => {
 /////////////////////////////////////////
 const handleForm = async (method) => {
   if (!isFormValid.value) return;
-
-  let rec = {};
+  const ds = lexpense.value.date.split('.') // 29.11.2024 => ['29,'11','2024']
+  let payload = {};
   if (method === "POST") {
-    rec = {
+    payload = {
       amount: parseFloat(lexpense.value.amount),
-      date: new Date(lexpense.value.date),
+      date: `${ds[2]}-${ds[1]}-${ds[0]}T00:00:00.000Z`,
       location: "",
       currency: lexpense.value.currency,
       description: lexpense.value.description,
       trip: { connect: { id: props.selectedTrip.id } },
-      user: { connect: { id: lexpense.value.userId } },
-      category: { connect: { id: lexpense.value.categoryId } },
+      user: { connect: { id: lexpense.value.user.id } },
+      category: { connect: { id: lexpense.value.category.id } },
     };
   }
 
   if (method === "PUT") {
-    rec = {
+    payload = {
       ...lexpense.value,
       amount: parseFloat(lexpense.value.amount),
     };
   }
 
+  console.log('method:',method)
+  console.log('payload:',JSON.stringify(payload, null,2))
   // Send data to API
   try {
-    await storeExpense.requestExpenses(method, rec);
-    // await $fetch('/api/expenses', {
-    //     method,
-    //     body: rec,
-    // })
-    // Reset the form
+    await storeExpense.requestExpenses(method, payload);
     resetForm();
     emit("refresh");
     closeDialog();

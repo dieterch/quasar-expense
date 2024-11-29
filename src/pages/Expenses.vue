@@ -27,7 +27,6 @@
           separator="horizontal"
           :sort-method="customSort"
           :pagination="initialPagination"
-          bordered
           nothide-pagination
           >
           <template v-slot:top>
@@ -44,9 +43,6 @@
           <template v-slot:body-cell-description="props">
             <q-td :props="props">
               <q-item>
-                <!--q-item-section side>
-                      <q-icon :name="props.row.categoryIcon" size="xs"></q-icon>
-                </q-item-section-->
                 <q-item-section>
                   <q-item-label lines="2"><q-icon :name="props.row.categoryIcon" size="xs" class="q-pr-xs"></q-icon>{{ props.row.description }}</q-item-label>
                   <q-item-label caption lines="2">Payed by {{ props.row.user }}</q-item-label>
@@ -76,7 +72,7 @@
     </div>
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
-      <q-fab icon="add_circle" direction="up" color="primary" class="bg-primary-2" nostyle="opacity: 70%;" padding="10px">
+      <q-fab icon="keyboard_arrow_up" direction="up" color="primary" class="bg-primary-2" nostyle="opacity: 70%;" padding="10px">
         <q-fab-action @click="openExpenseDialog('add', {})" color="primary" icon="add" />
         <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="primary" icon="bug_report"/>
