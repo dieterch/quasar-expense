@@ -6,28 +6,45 @@
     <q-card class="q-pa-md" style="width: 480px; max-width: 80vw">
       <q-card-section>
         <div class="text-h6">
-          {{ modeis("add") ? "Add Expense" : "Update Expense" }}
+          {{ modeis("add") ? "Add Trip" : "Update Trip" }}
         </div>
       </q-card-section>
       <q-form
-        ref="expenseForm"
+        ref="tripForm"
         class="q-gutter-md"
         @submit.prevent="onSubmit"
       >
         <div class="row">
-          <div class="col-6">
+          <div class="col q-ml-md q-mr-md">
             <q-input
               filled
               dense
-              v-model="lexpense.description"
-              label="Title*"
+              v-model="formTrip.name"
+              label="Trip Nam*"
               lazy-rules
               :rules="[(v) => !!v || 'Description is required']"
               @blur="validate"
             />
           </div>
+        </div>
+        <div class="row">
+          <div class="col q-ml-md q-mr-md">
+            <q-table
+              dense
+              flat
+              :rows="users"
+              :columns="columns"
+              row-key="name"
+              separator="horizontal"
+              bordered
+              hide-pagination
+              selection="multiple"
+              v-model:selected="selected"
+              @blur="validate"
+            />
+        </div>
 
-          <div class="col q-ml-md">
+          <!--div class="col q-ml-md">
             <q-select
               v-model="lexpense.category"
               dense
@@ -64,54 +81,15 @@
                 </q-item>
               </template>
             </q-select>
-          </div>
+          </div-->
         </div>
         <div class="row">
-          <div class="col-4">
-            <q-select
-              filled
-              dense
-              v-model="lexpense.currency"
-              :options="currencies"
-              option-label="symbol"
-              option-value="symbol"
-              label="Currency"
-              :rules="[(v) => !!v || 'Currency is required']"
-              @blur="validate"
-            />
-          </div>
-          <div class="col q-ml-md">
+          <div class="col q-ml-md q-mr-md" style="max-width: 300px">
             <q-input
               filled
               dense
-              v-model="lexpense.amount"
-              type="number"
-              label="Amount"
-              :rules="[(v) => !!v || 'Amount is required']"
-              @blur="validate"
-            />
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-4">
-            <q-select
-              filled
-              dense
-              v-model="lexpense.user"
-              :options="dialogusers"
-              option-label="name"
-              option-value="id"
-              label="User"
-              :rules="[(v) => !!v || 'User is required']"
-              @blur="validate"
-            />
-          </div>
-          <div class="col q-ml-md" style="max-width: 300px">
-            <q-input
-              filled
-              dense
-              v-model="lexpense.date"
-              label="Date"
+              v-model="formTrip.date"
+              label="Start Date"
               :rules="[(v) => !!v || 'Date is required']"
               @blur="validate"
             >
@@ -119,10 +97,10 @@
                 <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                     <q-date
-                      v-model="lexpense.date"
+                      v-model="formTrip.date"
                       mask="DD.MM.YYYY"
-                      title="Expense Date"
-                      :subtitle="lexpense.date"
+                      title="Trip Start Date"
+                      :subtitle="formTrip.date"
                       >
                       <div class="row items-center justify-end">
                         <q-btn v-close-popup label="Ok" color="primary" flat />
@@ -160,6 +138,8 @@
             v-close-popup
           />
         </q-card-actions>
+        <pre>{{ selected }}</pre>
+        <!--pre>{{ users }}</pre-->
       </q-form>
     </q-card>
   </q-dialog>
@@ -169,31 +149,26 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { date } from 'quasar'
 const { formatDate } = date
-import { useExpenseStore } from "stores/expense-store";
+import { useTripStore } from "stores/trip-store";
 import { useUserStore } from "stores/user-store";
-import { useCategoryStore } from "stores/category-store";
-const expenseStore = useExpenseStore();
+const tripStore = useTripStore();
 const userStore = useUserStore();
-const categoryStore = useCategoryStore();
 
-const props = defineProps(["selectedTrip", "dialog", "mode", "item"]);
+const props = defineProps(["dialog", "mode", "item"]);
 const emit = defineEmits(["refresh", "dialog"]);
 
 // Dropdown data
-const dialogcategories = ref([]);
-const dialogusers = ref([]);
-const currencies = [
-  { name: "USD", symbol: "$", factor: 0.92 },
-  { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
-];
+const trips = ref([])
+const users = ref([]);
+const columns = ref([]);
+const selected = ref([]) // Keep track of selected users
 
 // Form reference
-const expenseForm = ref(null);
+const tripForm = ref(null);
 
 // Mode toggle
 // const isAddMode = (props.mode === 'add');
 const modeis = (e) => props.mode === e;
-
 
 // Form validity tracker
 const isFormValid = ref(false);
@@ -204,40 +179,28 @@ const ldialog = computed({
   set: (value) => emit("dialog", value),
 });
 
-// Form data
-const lexpense = ref({})
+// State for the trip data
+const formTrip = ref({})
 
 const validate = async () => {
   console.log('in validate')
-  isFormValid.value = await expenseForm.value.validate();
+  isFormValid.value = await tripForm.value.validate();
 }
 
 // // Reset Form
-// const resetForm = async () => {
-//   lexpense.value = {
-//     // ...lexpense.value,
-//     // amount: null,
-//     currency: "€",
-//     date: formatDate(new Date(),'DD.MM.YYYY'),
-//     // description: "",
-//   };
+// const resetForm = () => {
+//   formTrip.value = { name: '', startDate: null, users: {} }
+//   selected.value = []
 // };
 
 // Fetch Data on Mount
 onMounted(async () => {
-  if (props.selectedTrip.id != 0) {
-    await userStore.postTripUsers(props.selectedTrip.id);
-    dialogusers.value = userStore.users.map((item) => item.user );
-  }
+  await tripStore.getTrips();
+  users.value = tripStore.trips;
 
-  await categoryStore.getCategories();
-  dialogcategories.value = categoryStore.categories.map((item) => {
-    return {
-      id: item.id,
-      name: item.name,
-      icon: item.icon,
-    };
-  });
+  await userStore.getUsers();
+  users.value = userStore.usersRows;
+  columns.value = userStore.tripDialogUsersColumns
 
   switch (props.mode) {
     case "add":
@@ -245,26 +208,13 @@ onMounted(async () => {
       //resetForm();
       break;
     case "update":
-      lexpense.value = {
+      formTrip.value = {
         // ...lexpense.value,
         id: props.item.id,
-        amount: props.item.amount,
-        currency: props.item.currency,
-
-        date: formatDate(new Date(props.item.date),'DD.MM.YYYY'),
-        location: props.item.location,
-        category: {
-          id: props.item.categoryId,
-          name: props.item.categoryName,
-          icon: props.item.categoryIcon
-        },
-        description: props.item.description,
-        tripId: props.item.tripId,
-        user: {
-          id: props.item.userId,
-          name: props.item.user,
-        }
+        name: props.item.name,
+        startDate: formatDate(new Date(props.item.startDate),'DD.MM.YYYY'),
       };
+      //selected.value = props.item.users.map((rec) => rec.user )
       break;
   }
 });
@@ -272,7 +222,7 @@ onMounted(async () => {
 // Form submission handler
 const onSubmit = async () => {
   if (isFormValid.value) {
-    console.log('Form is valid:', lexpense.value);
+    console.log('Form is valid:', fo.value);
     // Perform your submit logic here
     await handleForm(modeis('add') ? 'POST':'PUT')
   } else {
@@ -282,16 +232,14 @@ const onSubmit = async () => {
 
 // Reset form
 const onReset = () => {
-  lexpense.value = {
-    description: '',
-    category: null,
-    amount: null,
-    user: null,
-    currency: "€",
-    date: formatDate(new Date(),'DD.MM.YYYY'),
+  formTrip.value = {
+    name: '',
+    startDate: formatDate(new Date(),'DD.MM.YYYY'),
+    users: []
   };
-  if (expenseForm.value) {
-    expenseForm.value.resetValidation();
+  selected.value = []
+  if (tripForm.value) {
+    tripForm.value.resetValidation();
   }
   isFormValid.value = false;
 };
@@ -304,43 +252,52 @@ const parseDateToIso = ( datestring ) => {
 
 /////////////////////////////////////////
 const handleForm = async (method) => {
-  if (!isFormValid.value) return;
-  let payload = {};
-  if (method === "POST") {
-    payload = {
-      id: lexpense.value.id,
-      amount: parseFloat(lexpense.value.amount),
-      date: parseDateToIso(lexpense.value.date),
-      location: "",
-      currency: lexpense.value.currency,
-      description: lexpense.value.description,
-      trip: { connect: { id: props.selectedTrip.id } },
-      user: { connect: { id: lexpense.value.user.id } },
-      category: { connect: { id: lexpense.value.category.id } },
-    };
-  }
+  if (!isFormValid.value || selected.value.length === 0) return;
 
-  if (method === "PUT") {
-    payload = {
-      id: lexpense.value.id,
-      amount: parseFloat(lexpense.value.amount),
-      date: parseDateToIso(lexpense.value.date),
-      location: "",
-      currency: lexpense.value.currency,
-      description: lexpense.value.description,
-      trip: { connect: { id: props.selectedTrip.id } },
-      user: { connect: { id: lexpense.value.user.id } },
-      category: { connect: { id: lexpense.value.category.id } },
-    };
+  // Prepare users for submission
+  const userArray = selected.value.map(user => ({ userId: user.id }))
+  const payload = {
+      ...formTrip.value,
+      users: (method === 'POST') ? { create: userArray } : userArray
   }
+  if (method === 'PUT') { payload.id = props.item.id }
+
+  // let payload = {};
+  // if (method === "POST") {
+  //   payload = {
+  //     id: lexpense.value.id,
+  //     amount: parseFloat(lexpense.value.amount),
+  //     date: parseDateToIso(lexpense.value.date),
+  //     location: "",
+  //     currency: lexpense.value.currency,
+  //     description: lexpense.value.description,
+  //     trip: { connect: { id: props.selectedTrip.id } },
+  //     user: { connect: { id: lexpense.value.user.id } },
+  //     category: { connect: { id: lexpense.value.category.id } },
+  //   };
+  // }
+
+  // if (method === "PUT") {
+  //   payload = {
+  //     id: lexpense.value.id,
+  //     amount: parseFloat(lexpense.value.amount),
+  //     date: parseDateToIso(lexpense.value.date),
+  //     location: "",
+  //     currency: lexpense.value.currency,
+  //     description: lexpense.value.description,
+  //     trip: { connect: { id: props.selectedTrip.id } },
+  //     user: { connect: { id: lexpense.value.user.id } },
+  //     category: { connect: { id: lexpense.value.category.id } },
+  //   };
+  // }
 
   console.log('method:',method)
   console.log('payload:',JSON.stringify(payload, null,2))
   // Send data to API
   try {
-    await expenseStore.requestExpenses(method, payload);
-    //resetForm();
-    onReset();
+    await tripStore.requestTrips(method, payload);
+    // resetForm();
+    onReset()
     emit("refresh");
     closeDialog();
   } catch (error) {
@@ -351,7 +308,8 @@ const handleForm = async (method) => {
 
 // Close Dialog without Submission of data
 const closeDialog = () => {
-  resetForm();
+  //resetForm();
+  onReset()
   emit("dialog", false);
 };
 </script>

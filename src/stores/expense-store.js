@@ -14,11 +14,6 @@ const eHelper = (list) => {
       id: row.id,
       rawdate: row.date,
       date: row.date,
-      // date: new Date(row.date).toLocaleDateString("de-CA", {
-      //   year: "numeric",
-      //   month: "2-digit",
-      //   day: "2-digit",
-      // }),
       trip: row.trip.name,
       categoryIcon: row.category.icon,
       categoryId: row.category.id,
@@ -34,33 +29,10 @@ const eHelper = (list) => {
   return rows;
 };
 
-// trips: transform a complex list of records from the databas to a flat list of records compatible with Q-Table
-const tHelper = (list) => {
-  let rows = [];
-  list.map((row) => {
-    let d = {
-      id: row.id,
-      name: row.name,
-      rawdate: row.startDate,
-      date: new Date(row.startDate).toLocaleDateString("de-CA", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }),
-      participants: row.users.map((item) => item.user.name).join(", "),
-      noExpenses: row.expenses.length || 0,
-    };
-    rows.push(d);
-  });
-  return rows;
-};
-
 // ------
 // Store
 // ------
 export const useExpenseStore = defineStore("expense", () => {
-
-
 
 // --------
 // expenses
@@ -164,6 +136,14 @@ export const useExpenseStore = defineStore("expense", () => {
     // user has to reload database to update data
   }
 
+  // action: delete expense from database
+  const deleteExpense = async (id) => {
+    await api.delete("/api/expenses",{
+      data: { id: id},
+      headers: { "Content-Type": "application/json" },
+    })
+  }
+
   // i leave this examples for getters with argumens
   // // getter: filter expenses with trip id in frontend
   // const filteredExpenses = computed(() => {
@@ -181,83 +161,17 @@ export const useExpenseStore = defineStore("expense", () => {
   //   };
   // });
 
-  // ----------
-  // trips
-  // ----------
-  const trips = ref();
-
-  // action: load all trips from api
-  const getTrips = async () => {
-    const response = await api.get("/api/trips");
-    trips.value = response.data;
-  };
-
-  // getter: transform trips to rows
-  const tripsRows = computed(() => {
-    return trips.value ? tHelper(trips.value) : [];
-  });
-
-  // ----------
-  // categories
-  // ----------
-  const categories = ref();
-
-  // action: load all categories from api
-  const getCategories = async () => {
-    const response = await api.get("/api/categories");
-    categories.value = response.data;
-  };
-
-
-  // ---------
-  // user
-  // ---------
-  const users = ref();
-
-  // action: load all users from api
-  const getUsers = async () => {
-    const response = await api.get("/api/users");
-    users.value = response.data;
-  };
-
-  // action: load filtered expenses from database
-  const postTripUsers = async (tripid) => {
-    const response = await api.post("/api/tripusers",{
-      id: tripid,
-      headers: { "Content-Type": "application/json" },
-    })
-    users.value = response.data
-  }
-
-
   return {
     // Expenses
     getExpenses,
+    deleteExpense,
     postTripExpenses,
     requestExpenses,
     expenses,
     expensesRows,
 
-    // getters for fileterd expenses ... ?!
-    // filteredExpenses,
-    // filteredExpensesRows,
-
     // column definitions
     tripexpensesColumns,
     allexpansesColumns,
-
-    // Trips
-    getTrips,
-    trips,
-    tripsRows,
-
-    // Categories
-    getCategories,
-    categories,
-
-    // Users
-    getUsers,
-    postTripUsers,
-    users
   };
 });

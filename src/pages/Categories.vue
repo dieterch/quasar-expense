@@ -9,7 +9,7 @@
 </div>
 <div class="row justify-around q-mt-lg">
   <div>
-    <pre class="debug">{{ storeExpense.tripsRows }}</pre>
+    <pre class="debug">{{ tripStore.tripsRows }}</pre>
   </div>
 </div>
   </q-page>
@@ -25,12 +25,13 @@ import { useCounterStore } from 'stores/counter';
 const storeCounter = useCounterStore()
 
 import { useExpenseStore } from 'stores/expense-store';
-import { storeToRefs } from 'pinia';
-const storeExpense = useExpenseStore()
+import { useTripStore } from 'stores/trip-store';
+const expenseStore = useExpenseStore()
+const tripStore = useTripStore()
 
 onMounted(async() => {
-  await storeExpense.fetchExpenses()
-  await storeExpense.fetchTrips()
+  await expenseStore.getExpenses()
+  await tripStore.getTrips()
 })
 
 </script>

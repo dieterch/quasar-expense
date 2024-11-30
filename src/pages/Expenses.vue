@@ -4,13 +4,13 @@
     <div class="row">
       <div class="col-12">
         <ExpensesDialog
-            :dialog="isExpenseDialogOpen"
-            :key="isExpenseDialogOpen"
-            :mode="emode"
+            :dialog="isDialogOpen"
+            :key="isDialogOpen"
+            :mode="mode"
             :item="eitem"
             :selectedTrip="selectedTrip"
-            @refresh="tripChanged"
-            @dialog="(e)=>{isExpenseDialogOpen = e}"
+            @refresh="reload"
+            @dialog="(e)=>{isDialogOpen = e}"
         />
       </div>
     </div>
@@ -28,16 +28,10 @@
           :sort-method="customSort"
           :pagination="initialPagination"
           nothide-pagination
+          @row-click="rowclick"
           >
           <template v-slot:top>
-            <div style="margin: 20px 0px 15px 13px;" @click="router.push('/trips')">
-              <div v-if="selectedTrip">
-            <b>Selected Trip: </b><span class="selected-trip">{{ selectedTrip.name }}</span>
-              </div>
-              <div v-else>
-                <b>Selected Trip: </b><span class="selected-trip">-</span>
-              </div>
-            </div>
+            <SelectedTripBadge :selectedTrip="selectedTrip" @click="router.push('/trips')"/>
           </template>
 
           <template v-slot:body-cell-description="props">
@@ -55,8 +49,8 @@
           <template v-slot:body-cell-actions="props">
             <q-td :props="props">
               <div class="q-gutter-md">
-                <q-btn round icon="delete" size="sm" class="bg-primary-2" @click="deleteExpense(props.row)" />
-                <q-btn round icon="edit_note" class="bg-primary-2" size="sm" @click="openExpenseDialog('update',props.row)" />
+                <q-btn round icon="delete" size="sm" class="bg-primary-2" @click.stop="deleteExpense(props.row)" />
+                <!--q-btn round icon="edit_note" class="bg-primary-2" size="sm" @click="openExpenseDialog('update',props.row)" /-->
               </div>
             </q-td>
           </template>
@@ -64,19 +58,19 @@
         </q-table>
       </div>
     </div>
-    <div v-if="debug">
-      <h4>Rows:</h4>
-      <pre>{{ storeExpense.expensesRows }}</pre>
-      <h4>Expenses:</h4>
-      <pre>{{ storeExpense.expenses }}</pre>
+    <div v-if="debug" class="debug">
+      <h5>Rows:</h5>
+      <pre>{{ expenseStore.expensesRows }}</pre>
+      <h5>Expenses:</h5>
+      <pre>{{ expenseStore.expenses }}</pre>
     </div>
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
-      <q-fab icon="keyboard_arrow_up" direction="up" color="primary" class="bg-primary-2" nostyle="opacity: 70%;" padding="10px">
+      <q-fab icon="keyboard_arrow_up" direction="up" color="accent" padding="10px">
         <q-fab-action @click="openExpenseDialog('add', {})" color="primary" icon="add" />
         <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="primary" icon="bug_report"/>
-        <q-fab-action @click="onClick" color="primary" icon="refresh" />
+        <q-fab-action @click="reload" color="primary" icon="refresh" />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -88,16 +82,18 @@ defineOptions({
 });
 
 import { ref, onMounted, reactive } from "vue";
-import ExpensesDialog from 'components/ExpensesDialog.vue'
-import { useQuasar } from "quasar";
 import { useRouter } from 'vue-router'
-import { useExpenseStore } from 'stores/expense-store';
-import { storeToRefs } from 'pinia';
+import { useQuasar } from "quasar";
 
-const isExpenseDialogOpen = ref(false)
-const emode = ref('')
+import { useExpenseStore } from 'stores/expense-store';
+const expenseStore = useExpenseStore()
+
+import ExpensesDialog from 'components/ExpensesDialog.vue'
+import SelectedTripBadge from "components/SelectedTripBadge.vue";
+
+const isDialogOpen = ref(false)
+const mode = ref('')
 const eitem = ref({})
-const storeExpense = useExpenseStore()
 const $q = useQuasar()
 const router = useRouter()
 
@@ -110,12 +106,16 @@ const selectedTrip = reactive({
   name: "",
 });
 
-onMounted(async () => {
+const reload = async() => {
   const localdata = $q.localStorage.getItem('selectedTrip')
   if (localdata) Object.assign(selectedTrip, localdata)
-  await storeExpense.postTripExpenses(localdata.id)
-  filteredexpenses.value = storeExpense.expensesRows
-  columns.value = storeExpense.tripexpensesColumns
+  await expenseStore.postTripExpenses(localdata.id)
+  filteredexpenses.value = expenseStore.expensesRows
+  columns.value = expenseStore.tripexpensesColumns
+}
+
+onMounted(async () => {
+  await reload()
 });
 
 const initialPagination = {
@@ -152,51 +152,87 @@ const customSort = (rows, sortBy, descending) => {
   return data;
 };
 
-const deleteExpense = (item) => {
-  $q.dialog({
-        title: 'Delete',
-        message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
-        html: true
-      })
-  console.log(item);
-};
-
-const editExpense = (item) => {
-  $q.dialog({
-        title: 'Edit',
-        message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
-        html: true
-      })
-  console.log(item);
-};
-
   // Open Expenses Dialog, add or update database row
-  const openExpenseDialog = (mode, item) => {
+  const openExpenseDialog = (pmode, pitem) => {
     // $q.dialog({
     //     title: 'Update',
     //     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
     //     html: true
     //   })
-    emode.value = mode
-    eitem.value = item
-    isExpenseDialogOpen.value = true
+    mode.value = pmode
+    item.value = pitem
+    isDialogOpen.value = true
   }
 
+
+  const rowclick = (e, row, index) => {
+    // $q.dialog({
+      //       title: 'Row Click',
+      //       message: `<pre>${JSON.stringify({
+        //         evt: e,
+        //         row: row,
+        //         index: index
+        //       }, null, 2)}</pre>`,
+        //       html: true
+        //     })
+        // console.log(e,row,index)
+        mode.value = 'update'
+        eitem.value = row
+        isDialogOpen.value = true
+      };
+
+  const htmlcontent = ( item ) =>  {
+      return `<i class="mdi ${item.categoryIcon}" style="font-size: 2.5em;"></i>` +
+       `  <span style="font-size: 1.6em;">${item.description}</span><br>` +
+       `  <span style="font-size: 1.2em; margin-left: 8px;">${item.amount} ${item.currency}</span><br>`+
+       `  <span style="font-size: 0.8em; margin-left: 9px;">Payed by ${item.user}</span>`
+  }
+
+  const deleteExpense = (item) => {
+    $q.dialog({
+      title: 'Delete ?',
+      //message: `Delete "${item.description}". Continue?`,
+      cancel: true,
+      message: htmlcontent(item),
+      // message:`<i class="mdi ${item.categoryIcon}"></i> <b>${item.description} ${item.amount} ${item.currency} - Payed by ${item.user}</b>`,
+      html: true
+    }).onOk(async() => {
+        console.log('DELETE:')
+        console.log(JSON.stringify(item, null,2))
+        await expenseStore.deleteExpense(item.id)
+        reload()
+    }).onCancel(() => {
+      console.log('you pressed cancel.')
+    })
+  };
+
+  // Delete Expense
+  const odeleteExpense = async (item) => {
+
+  let permit = await confirmDialog({
+          title: "Please Confirm",
+          text: `Delete "${item.description}". Continue?`,
+          level: 'warning',
+          // icon: 'mdi-emoticon-happy-outline',
+          cancelText: 'Cancel',
+          confirmationText: 'Ok',
+      })
+
+  if ( permit ) {
+    await $fetch('/api/expenses', {
+      method: 'DELETE',
+      body: item,
+    })
+    // Refresh expenses
+    tripChanged()
+  }
+  }
 </script>
 
-<style>
-.my-table-details {
-  font-size: 0.85em;
-  font-style: italic;
-  max-width: 50px;
-  white-space: normal;
-  color: #555;
-  margin-top: 4px;
+<style scoped>
+
+.debug {
+  font-size: xx-small;
 }
 
-.selected-trip {
-  background-color: rgb(207, 207, 207);
-  margin-left: 10px;
-  padding: 8px;
-}
 </style>
