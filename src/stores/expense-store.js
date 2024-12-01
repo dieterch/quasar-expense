@@ -37,7 +37,7 @@ export const useExpenseStore = defineStore("expense", () => {
 // --------
 // expenses
 // --------
-  const tripexpensesColumns = ref(
+  const expensesColumnsStart = ref(
     [{
         name: "date",
         align: "center",
@@ -47,16 +47,10 @@ export const useExpenseStore = defineStore("expense", () => {
         format: (val) => `${date.formatDate(new Date(val),'DD.MM.YYYY')}`,
         style: "max-width: 50px",
         sortable: true,
-      },
-      {
-        name: "description",
-        align: "left",
-        label: "Description",
-        field: "description",
-        style: "max-width: 150px",
-        sortable: true,
-      },
-      {
+      }]
+  )
+  const expensesColumnsEnd = ref(
+    [{
         name: "expense",
         align: "right",
         label: "Expense",
@@ -70,16 +64,22 @@ export const useExpenseStore = defineStore("expense", () => {
         label: "Actions",
       }]
   )
-  const allexpansesColumns = ref(
-    [{
-        name: "date",
-        align: "center",
-        label: "Date",
-        field: "date",
-        format: (val) => `${date.formatDate(new Date(val),'DD.MM.YYYY')}`,
-        style: 'max-width: 50px',
+  const tripexpensesColumns = ref(
+    [
+      ...expensesColumnsStart.value,
+      {
+        name: "description",
+        align: "left",
+        label: "Description",
+        field: "description",
+        style: "max-width: 150px",
         sortable: true,
       },
+     ...expensesColumnsEnd.value]
+  )
+  const allexpansesColumns = ref(
+    [
+      ...expensesColumnsStart.value,
       {
         name: "trip",
         align: "left",
@@ -88,19 +88,7 @@ export const useExpenseStore = defineStore("expense", () => {
         style: 'max-width: 150px',
         sortable: true,
       },
-      {
-        name: "expense",
-        align: "right",
-        label: "Expense",
-        field: "amount",
-        format: (val) => `${val} €`,
-        sortable: true,
-      },
-      {
-        name: "actions",
-        align: "center",
-        label: "Actions",
-      }]
+     ...expensesColumnsEnd.value]
   )
 
   // data:

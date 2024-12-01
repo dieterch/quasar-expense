@@ -70,6 +70,16 @@ export const useTripStore = defineStore("trip", () => {
     trips.value = response.data;
   };
 
+  // action: create or update database row
+  const requestTrips = async ( method, payload ) => {
+    const response = await api.request('/api/trips', {
+        method: method,
+        data: payload,
+        headers: { "Content-Type": "application/json" },
+    })
+    // user has to reload database to update data
+  }
+
   // action: delete trip from database
   const deleteTrip = async (id) => {
     await api.delete("/api/trips",{
@@ -89,6 +99,7 @@ export const useTripStore = defineStore("trip", () => {
 
     // Trips
     getTrips,
+    requestTrips,
     deleteTrip,
     trips,
     tripsRows,

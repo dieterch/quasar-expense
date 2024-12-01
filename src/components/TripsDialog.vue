@@ -19,8 +19,8 @@
             <q-input
               filled
               dense
-              v-model="formTrip.name"
-              label="Trip Nam*"
+              v-model="formdata.name"
+              label="Trip Name*"
               lazy-rules
               :rules="[(v) => !!v || 'Description is required']"
               @blur="validate"
@@ -29,66 +29,10 @@
         </div>
         <div class="row">
           <div class="col q-ml-md q-mr-md">
-            <q-table
-              dense
-              flat
-              :rows="users"
-              :columns="columns"
-              row-key="name"
-              separator="horizontal"
-              bordered
-              hide-pagination
-              selection="multiple"
-              v-model:selected="selected"
-              @blur="validate"
-            />
-        </div>
-
-          <!--div class="col q-ml-md">
-            <q-select
-              v-model="lexpense.category"
-              dense
-              label="Category"
-              :options="dialogcategories"
-              nooption-label="name"
-              nooption-value="id"
-              filled
-              :rules="[(v) => !!v || 'Category is required']"
-              use-chips
-              @blur="validate"
-            >
-              <template v-slot:selected-item="scope">
-                <q-chip
-                  square
-                  dense
-                  @remove="scope.removeAtIndex(scope.index)"
-                  :tabindex="scope.tabindex"
-                  noclass="q-ma-none q-pl-md"
-                  :label="scope.opt.name"
-                  :icon = "scope.opt.icon"
-                  style=" background: transparent;"
-                />
-              </template>
-
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section avatar side>
-                    <q-icon :name="scope.opt.icon" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.name }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
-          </div-->
-        </div>
-        <div class="row">
-          <div class="col q-ml-md q-mr-md" style="max-width: 300px">
             <q-input
               filled
               dense
-              v-model="formTrip.date"
+              v-model="formdata.date"
               label="Start Date"
               :rules="[(v) => !!v || 'Date is required']"
               @blur="validate"
@@ -97,10 +41,10 @@
                 <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                     <q-date
-                      v-model="formTrip.date"
+                      v-model="formdata.date"
                       mask="DD.MM.YYYY"
                       title="Trip Start Date"
-                      :subtitle="formTrip.date"
+                      :subtitle="formdata.date"
                       >
                       <div class="row items-center justify-end">
                         <q-btn v-close-popup label="Ok" color="primary" flat />
@@ -112,6 +56,23 @@
               </template>
             </q-input>
           </div>
+        </div>
+        <div class="col q-ml-md q-mr-md">
+            <q-table
+              dense
+              flat
+              :rows="users"
+              :columns="columns"
+              row-key="name"
+              separator="none"
+              nobordered
+              :pagination="initialPagination"
+              hide-pagination
+              hide-header
+              selection="multiple"
+              v-model:selected="selected"
+              @blur="validate"
+            />
         </div>
         <q-card-actions align="right" class="bg-white text-teal">
           <q-btn
@@ -138,8 +99,18 @@
             v-close-popup
           />
         </q-card-actions>
-        <pre>{{ selected }}</pre>
-        <!--pre>{{ users }}</pre-->
+        <small v-if="true">
+          tripexpenses:
+          <pre>{{ tripexpenses }}</pre>
+          Formdata:
+          <pre>{{ formdata }}</pre>
+          Selected:
+          <pre>{{ selected }}</pre>
+          Props.item:
+          <pre>{{ props.item }}</pre>
+          Available Users:
+          <pre>{{ users }}</pre>
+      </small>
       </q-form>
     </q-card>
   </q-dialog>
@@ -147,24 +118,40 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { date } from 'quasar'
-const { formatDate } = date
+import { useQuasar } from "quasar";
+import { date } from 'quasar';
+const { formatDate } = date;
+import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
+import { useExpenseStore } from "stores/expense-store";
 import { useTripStore } from "stores/trip-store";
 import { useUserStore } from "stores/user-store";
+const expenseStore = useExpenseStore();
 const tripStore = useTripStore();
 const userStore = useUserStore();
+const $q = useQuasar();
 
 const props = defineProps(["dialog", "mode", "item"]);
 const emit = defineEmits(["refresh", "dialog"]);
 
-// Dropdown data
-const trips = ref([])
+const tripexpenses = ref([])
 const users = ref([]);
+
+// Dropdown data
 const columns = ref([]);
 const selected = ref([]) // Keep track of selected users
 
+const initialPagination = {
+  sortBy: "name",
+  descending: true,
+  page: 1,
+  rowsPerPage: 0,
+  // rowsNumber: xx if getting data from a server
+};
+
 // Form reference
 const tripForm = ref(null);
+// State for the trip data
+const formdata = ref({})
 
 // Mode toggle
 // const isAddMode = (props.mode === 'add');
@@ -179,24 +166,16 @@ const ldialog = computed({
   set: (value) => emit("dialog", value),
 });
 
-// State for the trip data
-const formTrip = ref({})
 
 const validate = async () => {
   console.log('in validate')
   isFormValid.value = await tripForm.value.validate();
 }
 
-// // Reset Form
-// const resetForm = () => {
-//   formTrip.value = { name: '', startDate: null, users: {} }
-//   selected.value = []
-// };
-
 // Fetch Data on Mount
 onMounted(async () => {
-  await tripStore.getTrips();
-  users.value = tripStore.trips;
+  await expenseStore.postTripExpenses(props.item.id);
+  tripexpenses.value = expenseStore.expenses;
 
   await userStore.getUsers();
   users.value = userStore.usersRows;
@@ -208,13 +187,15 @@ onMounted(async () => {
       //resetForm();
       break;
     case "update":
-      formTrip.value = {
+      formdata.value = {
         // ...lexpense.value,
         id: props.item.id,
         name: props.item.name,
-        startDate: formatDate(new Date(props.item.startDate),'DD.MM.YYYY'),
+        date: formatDate(new Date(props.item.date),'DD.MM.YYYY'),
       };
-      //selected.value = props.item.users.map((rec) => rec.user )
+      selected.value = props.item.participants.split(', ').map((name) => {
+        return users.value.find((rec) => rec.name === name)
+      })
       break;
   }
 });
@@ -222,7 +203,7 @@ onMounted(async () => {
 // Form submission handler
 const onSubmit = async () => {
   if (isFormValid.value) {
-    console.log('Form is valid:', fo.value);
+    console.log('Form is valid:', formdata.value);
     // Perform your submit logic here
     await handleForm(modeis('add') ? 'POST':'PUT')
   } else {
@@ -232,9 +213,9 @@ const onSubmit = async () => {
 
 // Reset form
 const onReset = () => {
-  formTrip.value = {
+  formdata.value = {
     name: '',
-    startDate: formatDate(new Date(),'DD.MM.YYYY'),
+    date: formatDate(new Date(),'DD.MM.YYYY'),
     users: []
   };
   selected.value = []
@@ -244,20 +225,43 @@ const onReset = () => {
   isFormValid.value = false;
 };
 
-const parseDateToIso = ( datestring ) => {
-  const [day, month, year ] = datestring.split('.').map(Number)
-  const retval =  new Date(Date.UTC(year, month-1, day)).toISOString()
-  return retval
-}
-
 /////////////////////////////////////////
 const handleForm = async (method) => {
-  if (!isFormValid.value || selected.value.length === 0) return;
+
+  // Ensure the form is valid and at least one user is selected
+  if (!isFormValid.value || selected.value.length === 0) {
+
+    $q.dialog({
+      title: 'Select Trip Users',
+      message: htmlDialogContent('mdi-alert-circle-outline', 'red', 'At least one participant must be selected!'),
+      html:true,
+      //message: 'At least one participant must be selected.',
+    })
+    closeDialog();
+    return;
+  };
+
+  // If in update mode, ensure all trip-related expenses have a valid owner
+  if (method === 'PUT' && tripexpenses.value.some(expense =>
+      !selected.value.some(user => user.id === expense.userId)
+  )) {
+      // alert('TripUsers with expenses cannot be deleted!');
+      $q.dialog({
+        title: 'Error',
+        message: htmlDialogContent('mdi-alert-circle-outline', 'red', 'Users with active expenses may not be disconnected!'),
+        html:true,
+        // message: 'users with expenses cannot be disconnected!'
+      })
+      closeDialog();
+      return;
+  }
 
   // Prepare users for submission
   const userArray = selected.value.map(user => ({ userId: user.id }))
   const payload = {
-      ...formTrip.value,
+      // ...formdata.value,
+      name: formdata.value.name,
+      startDate: parseDateToIso(formdata.value.date),
       users: (method === 'POST') ? { create: userArray } : userArray
   }
   if (method === 'PUT') { payload.id = props.item.id }
@@ -313,7 +317,6 @@ const closeDialog = () => {
   emit("dialog", false);
 };
 </script>
-
 
 <style scoped>
 ::v-deep(.q-field.q-field--error .q-field__append .q-icon.text-negative) {

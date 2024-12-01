@@ -169,6 +169,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { date } from 'quasar'
 const { formatDate } = date
+import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from "stores/expense-store";
 import { useUserStore } from "stores/user-store";
 import { useCategoryStore } from "stores/category-store";
@@ -296,12 +297,6 @@ const onReset = () => {
   isFormValid.value = false;
 };
 
-const parseDateToIso = ( datestring ) => {
-  const [day, month, year ] = datestring.split('.').map(Number)
-  const retval =  new Date(Date.UTC(year, month-1, day)).toISOString()
-  return retval
-}
-
 /////////////////////////////////////////
 const handleForm = async (method) => {
   if (!isFormValid.value) return;
@@ -351,7 +346,7 @@ const handleForm = async (method) => {
 
 // Close Dialog without Submission of data
 const closeDialog = () => {
-  resetForm();
+  onReset();
   emit("dialog", false);
 };
 </script>

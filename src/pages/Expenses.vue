@@ -27,7 +27,8 @@
           separator="horizontal"
           :sort-method="customSort"
           :pagination="initialPagination"
-          nothide-pagination
+          hide-pagination
+          hide-no-data
           @row-click="rowclick"
           >
           <template v-slot:top>
@@ -50,7 +51,7 @@
             <q-td :props="props">
               <div class="q-gutter-md">
                 <q-btn round icon="delete" size="sm" class="bg-primary-2" @click.stop="deleteExpense(props.row)" />
-                <!--q-btn round icon="edit_note" class="bg-primary-2" size="sm" @click="openExpenseDialog('update',props.row)" /-->
+                <q-btn round icon="edit_note" class="bg-primary-2" size="sm" @click="openExpenseDialog('update',props.row)" />
               </div>
             </q-td>
           </template>
@@ -58,11 +59,13 @@
         </q-table>
       </div>
     </div>
-    <div v-if="debug" class="debug">
-      <h5>Rows:</h5>
-      <pre>{{ expenseStore.expensesRows }}</pre>
-      <h5>Expenses:</h5>
-      <pre>{{ expenseStore.expenses }}</pre>
+    <div v-if="debug">
+    <small>
+        Rows:
+        <pre>{{ expenseStore.expensesRows }}</pre>
+        Expenses:
+        <pre>{{ expenseStore.expenses }}</pre>
+    </small>
     </div>
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
@@ -84,7 +87,7 @@ defineOptions({
 import { ref, onMounted, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import { useQuasar } from "quasar";
-
+import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from 'stores/expense-store';
 const expenseStore = useExpenseStore()
 
@@ -160,7 +163,7 @@ const customSort = (rows, sortBy, descending) => {
     //     html: true
     //   })
     mode.value = pmode
-    item.value = pitem
+    eitem.value = pitem
     isDialogOpen.value = true
   }
 
@@ -181,20 +184,24 @@ const customSort = (rows, sortBy, descending) => {
         isDialogOpen.value = true
       };
 
-  const htmlcontent = ( item ) =>  {
-      return `<i class="mdi ${item.categoryIcon}" style="font-size: 2.5em;"></i>` +
-       `  <span style="font-size: 1.6em;">${item.description}</span><br>` +
-       `  <span style="font-size: 1.2em; margin-left: 8px;">${item.amount} ${item.currency}</span><br>`+
-       `  <span style="font-size: 0.8em; margin-left: 9px;">Payed by ${item.user}</span>`
-  }
+  // const htmlcontent = ( item ) =>  {
+  //     return `<i class="mdi ${item.categoryIcon}" style="font-size: 2.5em;"></i>` +
+  //      `  <span style="font-size: 1.6em;">${item.description}</span><br>` +
+  //      `  <span style="font-size: 1.2em; margin-left: 8px;">${item.amount} ${item.currency}</span><br>`+
+  //      `  <span style="font-size: 0.8em; margin-left: 9px;">Payed by ${item.user}</span>`
+  // }
+
+  // const h = ( item ) => htmlDialogContent( 'mdi-alert-outline', 'orange', `${item.description} - ${item.amount}${item.currency} payed by ${item.user}` )
 
   const deleteExpense = (item) => {
     $q.dialog({
       title: 'Delete ?',
       //message: `Delete "${item.description}". Continue?`,
       cancel: true,
-      message: htmlcontent(item),
-      // message:`<i class="mdi ${item.categoryIcon}"></i> <b>${item.description} ${item.amount} ${item.currency} - Payed by ${item.user}</b>`,
+      message: htmlDialogContent(
+        'mdi-alert-outline', 'orange',
+        `${item.description}<br>${item.amount}${item.currency} <br><small>payed by ${item.user}<small>` ),
+      // message: htmlcontent(item),
       html: true
     }).onOk(async() => {
         console.log('DELETE:')
@@ -206,33 +213,5 @@ const customSort = (rows, sortBy, descending) => {
     })
   };
 
-  // Delete Expense
-  const odeleteExpense = async (item) => {
-
-  let permit = await confirmDialog({
-          title: "Please Confirm",
-          text: `Delete "${item.description}". Continue?`,
-          level: 'warning',
-          // icon: 'mdi-emoticon-happy-outline',
-          cancelText: 'Cancel',
-          confirmationText: 'Ok',
-      })
-
-  if ( permit ) {
-    await $fetch('/api/expenses', {
-      method: 'DELETE',
-      body: item,
-    })
-    // Refresh expenses
-    tripChanged()
-  }
-  }
 </script>
 
-<style scoped>
-
-.debug {
-  font-size: xx-small;
-}
-
-</style>

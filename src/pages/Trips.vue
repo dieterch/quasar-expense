@@ -27,6 +27,7 @@
           :sort-method="customSort"
           :pagination="initialPagination"
           hide-pagination
+          hide-no-data
           @row-click="rowclick"
         >
           <template v-slot:top>
@@ -78,6 +79,7 @@
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
       <q-fab icon="keyboard_arrow_up" direction="up" color="accent" padding="10px">
+        <q-fab-action @click="openTripDialog('add', {})" color="primary" icon="add" />
         <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action
           @click="debug = !debug"
@@ -96,10 +98,9 @@ defineOptions({
 });
 
 import { ref, onMounted, reactive, watch } from "vue";
-// import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
-
+import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useTripStore } from "stores/trip-store";
 const tripStore = useTripStore();
 
@@ -168,14 +169,14 @@ const customSort = (rows, sortBy, descending) => {
   return data;
 };
 
-const deleteTrip = (item) => {
-  $q.dialog({
-    title: "Delete",
-    message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
-    html: true,
-  });
-  console.log(item);
-};
+// const deleteTrip = (item) => {
+//   $q.dialog({
+//     title: "Delete",
+//     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
+//     html: true,
+//   });
+//   console.log(item);
+// };
 
 const editTrip = (item) => {
   // $q.dialog({
@@ -187,17 +188,39 @@ const editTrip = (item) => {
   openTripDialog('update',item)
 };
 
- // Open Trip Dialog, add or update database row
- const openTripDialog = (pmode, pitem) => {
-    // $q.dialog({
-    //     title: 'Update',
-    //     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
-    //     html: true
-    //   })
-    mode.value = pmode
-    eitem.value = pitem
-    isDialogOpen.value = true
-  }
+// Open Trip Dialog, add or update database row
+const openTripDialog = (pmode, pitem) => {
+  // $q.dialog({
+  //     title: 'Update',
+  //     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
+  //     html: true
+  //   })
+  mode.value = pmode
+  eitem.value = pitem
+  isDialogOpen.value = true
+}
+
+const deleteTrip = (item) => {
+    $q.dialog({
+      title: 'Delete ?',
+      //message: `Delete "${item.description}". Continue?`,
+      cancel: true,
+      message: htmlDialogContent(
+        'mdi-alert-outline', 'orange',
+        `${item.name}<br><small>${item.participants}<small>` ),
+      // message: htmlcontent(item),
+      html: true
+    }).onOk(async() => {
+        console.log('DELETE:')
+        console.log(JSON.stringify(item, null,2))
+        await tripStore.deleteTrip(item.id)
+        selectedTrip.name = '';
+        selectedTrip.id = 0;
+        reload()
+    }).onCancel(() => {
+      console.log('you pressed cancel.')
+    })
+  };
 
 const rowclick = (e, row, index) => {
   // $q.dialog({
