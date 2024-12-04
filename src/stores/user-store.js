@@ -13,7 +13,8 @@ const uHelper = (list) => {
     let d = {
       id: row.id,
       name: row.name,
-      email: row.email
+      email: row.email,
+      role: row.role
     };
     rows.push(d);
   });
@@ -42,6 +43,30 @@ export const useUserStore = defineStore("user", () => {
     }
   ]);
 
+  const allUserColumns =
+  [
+      {
+        name: "name",
+        align: "left",
+        label: "Name",
+        field: "name",
+        style: "max-width: 150px",
+        sortable: true,
+      },
+      {
+        name: "email",
+        align: "left",
+        label: "Emaif",
+        field: "email",
+        sortable: true,
+      },
+      {
+        name: "actions",
+        align: "center",
+        label: "Actions",
+      }
+    ];
+
   // action: load all users from api
   const getUsers = async () => {
     const response = await api.get("/api/users");
@@ -68,7 +93,8 @@ export const useUserStore = defineStore("user", () => {
     postTripUsers,
     usersRows,
     users,
-    tripDialogUsersColumns
+    tripDialogUsersColumns,
+    allUserColumns
 
   };
 });

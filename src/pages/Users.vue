@@ -1,46 +1,247 @@
 <template>
-
-<q-page class="flex flex-center">
-    <div class="bg-grey-3 q-pa-md elevated" style="min-width: 250px; max-width: 250px;">
-      <div class="text-center text-h4 text-primary">Counter</div>
-      <!-- Use the destructured state -->
-      <div class="text-center text-h4 q-pa-sm bg-white">{{ storeCounter.count }}</div>
-      <!-- Manipulate state directly-->
-
-      <div class="text-center q-pt-md q-gutter-md">
-        <q-btn round @click="storeCounter.decreaseCount" class="bg-primary text-white text-h7">-</q-btn>
-        <q-btn round @click="storeCounter.increaseCount" class="bg-primary text-white text-h7">+</q-btn>
-      </div>
-
-      <hr class="q-ma-md text-grey-1">
-      <div class="text-center text-h6 text-grey-7">
-        This counter is: {{ storeCounter.oddOrEven }}
-      </div>
-      <hr class="q-ma-md text-grey-1">
-      <div class="text-center text-h5">
-        Edit Counter:
-        <input
-          v-model="storeCounter.count"
-          type="number"
-          style="max-width: 140px;"
-          class="text-center"
+  <q-page>
+    <div class="row">
+      <div class="col-12">
+        <TripsDialog
+            :dialog="isDialogOpen"
+            :key="isDialogOpen"
+            :mode="mode"
+            :item="eitem"
+            @refresh="reload"
+            @dialog="(e)=>{isDialogOpen = e}"
         />
       </div>
     </div>
-</q-page>
+
+    <div class="row">
+      <div class="col-12">
+        <q-table
+          :title="selectedTrip"
+          dense
+          flat
+          :rows="usersRows"
+          :columns="columns"
+          row-key="id"
+          separator="horizontal"
+          bordered
+          :sort-method="customSort"
+          :pagination="initialPagination"
+          hide-pagination
+          hide-no-data
+          @row-click="rowclick"
+        >
+          <template v-slot:body-cell-name="props">
+            <q-td :props="props">
+              <q-item>
+                <q-item-section>
+                  <q-item-label>{{ props.row.name }}</q-item-label>
+                  <q-item-label caption lines="2">{{
+                    props.row.role
+                  }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props">
+              <div class="q-gutter-md">
+                <q-btn
+                  round
+                  icon="delete"
+                  size="sm"
+                  class="bg-primary-2"
+                  @click.stop="deleteTrip(props.row)"
+                />
+                <q-btn
+                  round
+                  icon="edit_note"
+                  class="bg-primary-2"
+                  size="sm"
+                  @click.stop="editTrip(props.row)"
+                />
+              </div>
+            </q-td>
+          </template>
+        </q-table>
+      </div>
+    </div>
+    <div v-if="debug">
+      <h4>userRows:</h4>
+      <pre>{{ userStore.usersRows }}</pre>
+    </div>
+
+    <q-page-sticky position="bottom" :offset="[18, 18]">
+      <q-fab icon="keyboard_arrow_up" direction="up" color="accent" padding="10px">
+        <q-fab-action @click="openTripDialog('add', {})" color="primary" icon="add" />
+        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
+        <q-fab-action
+          @click="debug = !debug"
+          color="primary"
+          icon="bug_report"
+        />
+        <q-fab-action @click="refresh" color="primary" icon="refresh" />
+      </q-fab>
+    </q-page-sticky>
+  </q-page>
 </template>
 
 <script setup>
-
 defineOptions({
-  name: 'UsersPage'
+  name: "TripsPage",
 });
 
+import { ref, onMounted, reactive, watch } from "vue";
+import { useQuasar } from "quasar";
+import { useRouter } from "vue-router";
+import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
+import { useUserStore } from "stores/user-store";
+const userStore = useUserStore();
 
-import { storeToRefs } from 'pinia';
-import { useCounterStore } from 'stores/counter';
-const storeCounter = useCounterStore();
+import TripsDialog from "components/TripsDialog.vue";
 
+const isDialogOpen = ref(false)
+const mode = ref('')
+const eitem = ref({})
+const $q = useQuasar();
+const router = useRouter();
+const usersRows = ref([]);
+const debug = ref(false);
+const columns = ref([])
+// const columns =
+// [
+//     {
+//       name: "name",
+//       align: "left",
+//       label: "Name",
+//       field: "name",
+//       style: "max-width: 150px",
+//       sortable: true,
+//     },
+//     {
+//       name: "email",
+//       align: "left",
+//       label: "Emaif",
+//       field: "email",
+//       sortable: true,
+//     },
+//     {
+//       name: "actions",
+//       align: "center",
+//       label: "Actions",
+//     }
+//   ];
+
+
+// reload from database
+const reload = async() => {
+  await userStore.getUsers()
+  usersRows.value = userStore.usersRows;
+  columns.value = userStore.allUserColumns
+}
+
+onMounted(async () => {
+  await reload()
+});
+
+const initialPagination = {
+  sortBy: "date",
+  descending: true,
+  page: 1,
+  rowsPerPage: 20,
+  // rowsNumber: xx if getting data from a server
+};
+
+const customSort = (rows, sortBy, descending) => {
+  const data = [...rows];
+
+  if (sortBy) {
+    data.sort((a, b) => {
+      const x = descending ? b : a;
+      const y = descending ? a : b;
+      if (sortBy === "date") {
+        // Date sort
+        return new Date(x["rawdate"]) > new Date(y["rawdate"]) ? 1 : new Date(x["rawdate"]) < new Date(y["rawdate"]) ? -1 : 0;
+      } else if (sortBy === "noExpenses") {
+        return parseFloat(x[sortBy]) - parseFloat(y[sortBy]);
+      } else {
+        // string sort
+        return x[sortBy] > y[sortBy] ? 1 : x[sortBy] < y[sortBy] ? -1 : 0;
+      }
+    });
+  }
+  return data;
+};
+
+// const deleteTrip = (item) => {
+//   $q.dialog({
+//     title: "Delete",
+//     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
+//     html: true,
+//   });
+//   console.log(item);
+// };
+
+const editTrip = (item) => {
+  // $q.dialog({
+  //   title: "Edit",
+  //   message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
+  //   html: true,
+  // });
+  console.log(JSON.stringify(item, null, 2));
+  openTripDialog('update',item)
+};
+
+// Open Trip Dialog, add or update database row
+const openTripDialog = (pmode, pitem) => {
+  // $q.dialog({
+  //     title: 'Update',
+  //     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
+  //     html: true
+  //   })
+  mode.value = pmode
+  eitem.value = pitem
+  isDialogOpen.value = true
+}
+
+const deleteTrip = (item) => {
+    $q.dialog({
+      title: 'Delete ?',
+      //message: `Delete "${item.description}". Continue?`,
+      cancel: true,
+      message: htmlDialogContent(
+        'mdi-alert-outline', 'orange',
+        `${item.name}<br><small>${item.participants}<small>` ),
+      // message: htmlcontent(item),
+      html: true
+    }).onOk(async() => {
+        console.log('DELETE:')
+        console.log(JSON.stringify(item, null,2))
+        await tripStore.deleteTrip(item.id)
+        selectedTrip.name = '';
+        selectedTrip.id = 0;
+        reload()
+    }).onCancel(() => {
+      console.log('you pressed cancel.')
+    })
+  };
+
+const rowclick = (e, row, index) => {
+  // $q.dialog({
+  //       title: 'Row Click',
+  //       message: `<pre>${JSON.stringify({
+  //         evt: e,
+  //         row: row,
+  //         index: index
+  //       }, null, 2)}</pre>`,
+  //       html: true
+  //     })
+  selectedTrip.name = row.name;
+  selectedTrip.id = row.id;
+  router.push("/");
+};
+
+const goToExpense = () => {
+  router.push("/");
+};
 </script>
-
-
