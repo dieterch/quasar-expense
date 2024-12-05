@@ -35,6 +35,13 @@
             <SelectedTripBadge :selectedTrip="selectedTrip" @click="router.push('/trips')"/>
           </template>
 
+          <template v-slot:header-cell-description="props">
+            <q-th :props="props" class="text-center">
+              {{ props.col.label }}
+            </q-th>
+          </template>
+
+
           <template v-slot:body-cell-description="props">
             <q-td :props="props">
               <q-item>

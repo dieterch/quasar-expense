@@ -2,7 +2,7 @@
   <q-page>
     <div class="row">
       <div class="col-12">
-        <TripsDialog
+        <UsersDialog
             :dialog="isDialogOpen"
             :key="isDialogOpen"
             :mode="mode"
@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row q-mt-sm">
       <div class="col-12">
         <q-table
           :title="selectedTrip"
@@ -30,13 +30,16 @@
           hide-no-data
           @row-click="rowclick"
         >
+          <template v-slot:top>
+          </template>
+
           <template v-slot:body-cell-name="props">
             <q-td :props="props">
               <q-item>
                 <q-item-section>
                   <q-item-label>{{ props.row.name }}</q-item-label>
                   <q-item-label caption lines="2">{{
-                    props.row.role
+                    props.row.email
                   }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -58,7 +61,7 @@
                   icon="edit_note"
                   class="bg-primary-2"
                   size="sm"
-                  @click.stop="editTrip(props.row)"
+                  @click.stop="editUser(props.row)"
                 />
               </div>
             </q-td>
@@ -73,7 +76,7 @@
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
       <q-fab icon="keyboard_arrow_up" direction="up" color="accent" padding="10px">
-        <q-fab-action @click="openTripDialog('add', {})" color="primary" icon="add" />
+        <q-fab-action @click="openUserDialog('add', {})" color="primary" icon="add" />
         <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action
           @click="debug = !debug"
@@ -98,7 +101,7 @@ import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useUserStore } from "stores/user-store";
 const userStore = useUserStore();
 
-import TripsDialog from "components/TripsDialog.vue";
+import UsersDialog from "components/UsersDialog.vue";
 
 const isDialogOpen = ref(false)
 const mode = ref('')
@@ -182,18 +185,18 @@ const customSort = (rows, sortBy, descending) => {
 //   console.log(item);
 // };
 
-const editTrip = (item) => {
+const editUser = (item) => {
   // $q.dialog({
   //   title: "Edit",
   //   message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,
   //   html: true,
   // });
   console.log(JSON.stringify(item, null, 2));
-  openTripDialog('update',item)
+  openUserDialog('update',item)
 };
 
 // Open Trip Dialog, add or update database row
-const openTripDialog = (pmode, pitem) => {
+const openUserDialog = (pmode, pitem) => {
   // $q.dialog({
   //     title: 'Update',
   //     message: `<pre>${JSON.stringify(item, null, 2)}</pre>`,

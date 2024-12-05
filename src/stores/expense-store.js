@@ -73,6 +73,7 @@ export const useExpenseStore = defineStore("expense", () => {
         label: "Description",
         field: "description",
         style: "max-width: 150px",
+        headerStyle: 'padding-left: 24px;',
         sortable: true,
       },
      ...expensesColumnsEnd.value]

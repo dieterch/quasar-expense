@@ -50,14 +50,14 @@ export const useUserStore = defineStore("user", () => {
         align: "left",
         label: "Name",
         field: "name",
-        style: "max-width: 150px",
+        headerStyle: 'padding-left: 32px;',
         sortable: true,
       },
       {
-        name: "email",
+        name: "role",
         align: "left",
-        label: "Emaif",
-        field: "email",
+        label: "Role",
+        field: "role",
         sortable: true,
       },
       {
