@@ -73,6 +73,24 @@ export const useUserStore = defineStore("user", () => {
     users.value = response.data;
   };
 
+  // action: create or update database row
+  const requestUsers = async ( method, payload ) => {
+    const response = await api.request('/api/users', {
+        method: method,
+        data: payload,
+        headers: { "Content-Type": "application/json" },
+    })
+    // user has to reload database to update data
+    }
+
+  // action: delete trip from database
+  const deleteUser = async (id) => {
+  await api.delete("/api/users",{
+    data: { id: id},
+    headers: { "Content-Type": "application/json" },
+  })
+  }
+
   // action: load filtered expenses from database
   const postTripUsers = async (tripid) => {
     const response = await api.post("/api/tripusers",{
@@ -90,6 +108,8 @@ export const useUserStore = defineStore("user", () => {
   return {
     // Users
     getUsers,
+    requestUsers,
+    deleteUser,
     postTripUsers,
     usersRows,
     users,

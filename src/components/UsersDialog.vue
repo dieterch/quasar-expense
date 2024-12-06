@@ -41,7 +41,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col q-ml-md q-mr-md">
+          <div class="col-12 q-ml-md q-mr-md">
             <q-input
               filled
               dense
@@ -50,6 +50,18 @@
               lazy-rules
               :rules="[(v) => !!v || 'Email is required']"
               @blur="validate"
+            />
+          </div>
+          <div class="col-12 q-ml-md q-mr-md">
+            <q-input
+              filled
+              dense
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              v-model="formdata.password"
+              label="User Password*"
+              :type="showPassword ? 'text' : 'password'"
+              lazy-rules
+              @click:append="showPassword = !showPassword"
             />
           </div>
         </div>
@@ -94,6 +106,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useQuasar } from "quasar";
+import { hashSync }from 'bcryptjs' // for frontend
 import { date } from 'quasar';
 const { formatDate } = date;
 import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
@@ -101,7 +114,7 @@ import { useExpenseStore } from "stores/expense-store";
 import { useTripStore } from "stores/trip-store";
 import { useUserStore } from "stores/user-store";
 const expenseStore = useExpenseStore();
-const tripStore = useTripStore();
+const showPassword = ref(false)
 const userStore = useUserStore();
 const $q = useQuasar();
 
@@ -169,9 +182,6 @@ onMounted(async () => {
         email: props.item.email,
         role: props.item.role
       };
-      selected.value = props.item.participants.split(', ').map((name) => {
-        return users.value.find((rec) => rec.name === name)
-      })
       break;
   }
 });
@@ -192,6 +202,7 @@ const onReset = () => {
   formdata.value = {
     name: '',
     email: '',
+    password: '',
     role: 'user'
   };
   selected.value = []
@@ -205,77 +216,29 @@ const onReset = () => {
 const handleForm = async (method) => {
 
   // Ensure the form is valid and at least one user is selected
-  if (!isFormValid.value || selected.value.length === 0) {
+  if (!isFormValid.value) return
 
-    $q.dialog({
-      title: 'Select Trip Users',
-      message: htmlDialogContent('mdi-alert-circle-outline', 'red', 'At least one participant must be selected!'),
-      html:true,
-      //message: 'At least one participant must be selected.',
-    })
-    closeDialog();
-    return;
-  };
-
-  // If in update mode, ensure all trip-related expenses have a valid owner
-  if (method === 'PUT' && tripexpenses.value.some(expense =>
-      !selected.value.some(user => user.id === expense.userId)
-  )) {
-      // alert('TripUsers with expenses cannot be deleted!');
+  if ( modeis('add') ) {
+    if ( formdata.password === "" ) {
       $q.dialog({
-        title: 'Error',
-        message: htmlDialogContent('mdi-alert-circle-outline', 'red', 'Users with active expenses may not be disconnected!'),
-        html:true,
-        // message: 'users with expenses cannot be disconnected!'
-      })
-      closeDialog();
-      return;
+        title: "Password",
+        message: 'password cannot be empty in add mode',
+      });
+      return
+    }
   }
 
-  // Prepare users for submission
-  const userArray = selected.value.map(user => ({ userId: user.id }))
-  const payload = {
-      // ...formdata.value,
-      name: formdata.value.name,
-      startDate: parseDateToIso(formdata.value.date),
-      users: (method === 'POST') ? { create: userArray } : userArray
-  }
-  if (method === 'PUT') { payload.id = props.item.id }
+  let payload = { ...formdata.value }
 
-  // let payload = {};
-  // if (method === "POST") {
-  //   payload = {
-  //     id: lexpense.value.id,
-  //     amount: parseFloat(lexpense.value.amount),
-  //     date: parseDateToIso(lexpense.value.date),
-  //     location: "",
-  //     currency: lexpense.value.currency,
-  //     description: lexpense.value.description,
-  //     trip: { connect: { id: props.selectedTrip.id } },
-  //     user: { connect: { id: lexpense.value.user.id } },
-  //     category: { connect: { id: lexpense.value.category.id } },
-  //   };
-  // }
-
-  // if (method === "PUT") {
-  //   payload = {
-  //     id: lexpense.value.id,
-  //     amount: parseFloat(lexpense.value.amount),
-  //     date: parseDateToIso(lexpense.value.date),
-  //     location: "",
-  //     currency: lexpense.value.currency,
-  //     description: lexpense.value.description,
-  //     trip: { connect: { id: props.selectedTrip.id } },
-  //     user: { connect: { id: lexpense.value.user.id } },
-  //     category: { connect: { id: lexpense.value.category.id } },
-  //   };
-  // }
+  if (formdata.value.password != '') {
+            payload.password = hashSync(formdata.value.password, 10)
+        } else console.log('Password not changed.')
 
   console.log('method:',method)
   console.log('payload:',JSON.stringify(payload, null,2))
   // Send data to API
   try {
-    await tripStore.requestTrips(method, payload);
+    await userStore.requestUsers(method, payload);
     // resetForm();
     onReset()
     emit("refresh");

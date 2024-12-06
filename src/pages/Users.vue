@@ -28,7 +28,6 @@
           :pagination="initialPagination"
           hide-pagination
           hide-no-data
-          @row-click="rowclick"
         >
           <template v-slot:top>
           </template>
@@ -54,7 +53,7 @@
                   icon="delete"
                   size="sm"
                   class="bg-primary-2"
-                  @click.stop="deleteTrip(props.row)"
+                  @click.stop="deleteUser(props.row)"
                 />
                 <q-btn
                   round
@@ -111,30 +110,6 @@ const router = useRouter();
 const usersRows = ref([]);
 const debug = ref(false);
 const columns = ref([])
-// const columns =
-// [
-//     {
-//       name: "name",
-//       align: "left",
-//       label: "Name",
-//       field: "name",
-//       style: "max-width: 150px",
-//       sortable: true,
-//     },
-//     {
-//       name: "email",
-//       align: "left",
-//       label: "Emaif",
-//       field: "email",
-//       sortable: true,
-//     },
-//     {
-//       name: "actions",
-//       align: "center",
-//       label: "Actions",
-//     }
-//   ];
-
 
 // reload from database
 const reload = async() => {
@@ -207,44 +182,21 @@ const openUserDialog = (pmode, pitem) => {
   isDialogOpen.value = true
 }
 
-const deleteTrip = (item) => {
+const deleteUser = (item) => {
     $q.dialog({
       title: 'Delete ?',
-      //message: `Delete "${item.description}". Continue?`,
       cancel: true,
       message: htmlDialogContent(
         'mdi-alert-outline', 'orange',
-        `${item.name}<br><small>${item.participants}<small>` ),
-      // message: htmlcontent(item),
+        `${item.name}<br><small>${item.email}<small>` ),
       html: true
     }).onOk(async() => {
         console.log('DELETE:')
         console.log(JSON.stringify(item, null,2))
-        await tripStore.deleteTrip(item.id)
-        selectedTrip.name = '';
-        selectedTrip.id = 0;
+        await userStore.deleteUser(item.id)
         reload()
     }).onCancel(() => {
       console.log('you pressed cancel.')
     })
   };
-
-const rowclick = (e, row, index) => {
-  // $q.dialog({
-  //       title: 'Row Click',
-  //       message: `<pre>${JSON.stringify({
-  //         evt: e,
-  //         row: row,
-  //         index: index
-  //       }, null, 2)}</pre>`,
-  //       html: true
-  //     })
-  selectedTrip.name = row.name;
-  selectedTrip.id = row.id;
-  router.push("/");
-};
-
-const goToExpense = () => {
-  router.push("/");
-};
 </script>
