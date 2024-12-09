@@ -22,9 +22,29 @@ export const useCategoryStore = defineStore("category", () => {
     categories.value = response.data;
   };
 
+  // action: create or update database row
+  const requestCategories = async ( method, payload ) => {
+    const response = await api.request('/api/categories', {
+        method: method,
+        data: payload,
+        headers: { "Content-Type": "application/json" },
+    })
+    // user has to reload database to update data
+  }
+
+  // action: delete trip from database
+  const deleteCategory = async (id) => {
+    await api.delete("/api/categories",{
+      data: { id: id},
+      headers: { "Content-Type": "application/json" },
+    })
+  }
+
   return {
     // Categories
     getCategories,
+    requestCategories,
+    deleteCategory,
     categories,
   };
 });

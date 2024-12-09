@@ -81,7 +81,7 @@ export const useUserStore = defineStore("user", () => {
         headers: { "Content-Type": "application/json" },
     })
     // user has to reload database to update data
-    }
+  }
 
   // action: delete trip from database
   const deleteUser = async (id) => {
