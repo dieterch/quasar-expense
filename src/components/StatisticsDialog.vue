@@ -1,67 +1,3 @@
-<template>
-  <q-dialog v-model="internalShowDialog" persistent>
-    <q-card style="width: 90vw; max-width: 800px;">
-      <q-card-section>
-        <div class="text-h6">Statistics Overview</div>
-      </q-card-section>
-
-      <q-card-section>
-        <q-tabs v-model="activeTab" align="justify">
-          <q-tab name="table" label="Table" />
-          <q-tab name="chart" label="Chart" />
-        </q-tabs>
-
-        <q-tab-panels v-model="activeTab">
-          <!-- Table Panel -->
-          <q-tab-panel name="table">
-            <div style="overflow-x: auto;">
-              <q-table
-                :rows="tableRowsWithTotals"
-                :columns="tableColumns"
-                row-key="category"
-                dense
-              >
-                <template v-slot:body-cell-category="props">
-                  <q-td :props="props">
-                    <strong>{{ props.row.category }}</strong>
-                  </q-td>
-                </template>
-                <template v-slot:body-cell="props">
-                  <q-td :props="props">
-                    {{ props.row[props.col.name]?.toFixed(2) || "0.00" }}
-                  </q-td>
-                </template>
-              </q-table>
-            </div>
-          </q-tab-panel>
-
-          <!-- Chart Panel -->
-          <q-tab-panel name="chart">
-            <div class="chart-controls">
-              <q-select
-                v-model="selectedUser"
-                :options="userOptions"
-                option-value="value"
-                label="Select User"
-                dense
-                borderless
-                class="large-dropdown"
-              />
-            </div>
-            <div class="pie-chart">
-              <Pie :data="chartData" :options="chartOptions" />
-            </div>
-          </q-tab-panel>
-        </q-tab-panels>
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Close" @click="internalShowDialog = false" color="primary" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-</template>
-
 <script setup>
 import { ref, computed, watch } from "vue";
 import { Pie } from "vue-chartjs";
@@ -108,7 +44,7 @@ watch(internalShowDialog, (newVal) => {
 const activeTab = ref("table");
 
 // Dropdown state
-const selectedUser = ref({ label:'all', value:'all'});
+const selectedUser = ref({ label: "all", value: "all" });
 
 // Dropdown options
 const userOptions = computed(() => {
@@ -158,63 +94,110 @@ const tableRowsWithTotals = computed(() => {
   return rows;
 });
 
-// // Reactive chart data
+// Reactive chart data
 const chartData = computed(() => {
   const user = selectedUser.value;
   const currentData = props.data.data[user.value] || {}; // Fallback to empty object
-  // console.log('in chartData computed ... user:', user.value, ' currentData:', currentData)
   const labels = Object.keys(currentData);
-  const data = Object.values(currentData).map((item) => Math.round(item.amount));
+  const amounts = Object.values(currentData).map((item) => Math.round(item.amount));
+  const totalAmount = amounts.reduce((sum, val) => sum + val, 0);
+  const percentages = amounts.map((value) => ((value / totalAmount) * 100).toFixed(1)); // Rounded to 1 digit
 
   return {
     labels,
     datasets: [
       {
         label: user.value === "all" ? "Totals" : `Expenses for ${user.value}`,
-        data,
+        data: amounts,
         backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+        percentages,
       },
     ],
   };
 });
 
-// Custom plugin to display data inside chart segments
-// const dataLabelPlugin = {
-//   id: "dataLabelPlugin",
-//   beforeDraw(chart) {
-//     const ctx = chart.ctx;
-//     ctx.save();
-//     chart.data.datasets.forEach((dataset, datasetIndex) => {
-//       const meta = chart.getDatasetMeta(datasetIndex);
-//       meta.data.forEach((element, index) => {
-//         const value = dataset.data[index];
-//         const { x, y } = element.tooltipPosition();
-//         ctx.fillStyle = "#000";
-//         ctx.font = "bold 12px Arial";
-//         ctx.textAlign = "center";
-//         ctx.fillText(`${value} €`, x, y);
-//       });
-//     });
-//     ctx.restore();
-//   },
-// };
-
-// Chart options
+// Chart options with custom tooltip
 const chartOptions = ref({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { position: "right" },
     title: { display: false, text: "Expenses Distribution" },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          const dataset = context.dataset;
+          const index = context.dataIndex;
+          const amount = dataset.data[index];
+          const percentage = dataset.percentages[index];
+
+          // Format the tooltip with labels left-aligned and values right-aligned
+          return [
+            `  Amount:  ${amount.toFixed(1).padStart(12, " ")}€`,
+            `  Share:          ${percentage.padStart(8, " ")}%`,
+          ];
+        },
+      },
+    },
   },
- // plugins: [dataLabelPlugin],
 });
 </script>
 
+<template>
+  <q-dialog v-model="internalShowDialog" persistent>
+    <q-card style="width: 90vw; max-width: 800px;">
+      <q-card-section>
+        <div class="text-h6">Statistics Overview</div>
+      </q-card-section>
+
+      <q-card-section>
+        <q-tabs v-model="activeTab" align="justify">
+          <q-tab name="table" label="Table" />
+          <q-tab name="chart" label="Chart" />
+        </q-tabs>
+
+        <q-tab-panels v-model="activeTab">
+          <q-tab-panel name="table">
+            <div style="overflow-x: auto;">
+              <q-table
+                :rows="tableRowsWithTotals"
+                :columns="tableColumns"
+                row-key="category"
+                dense
+              />
+            </div>
+          </q-tab-panel>
+
+          <q-tab-panel name="chart">
+            <div class="chart-controls">
+              <q-select
+                v-model="selectedUser"
+                :options="userOptions"
+                option-value="value"
+                label="Select User"
+                dense
+                borderless
+                class="large-dropdown"
+              />
+            </div>
+            <div class="pie-chart">
+              <Pie :data="chartData" :options="chartOptions" />
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Close" @click="internalShowDialog = false" color="primary" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+</template>
+
 <style scoped>
 .pie-chart {
-  height: 400px;
-  width: 400px;
+  height: 300px;
+  width: 300px;
   margin: 0 auto;
 }
 .chart-controls {
