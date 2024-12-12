@@ -13,6 +13,14 @@
             @dialog="(e)=>{isDialogOpen = e}"
         />
       </div>
+
+      <div class="col-12">
+        <StatisticsDialog
+          :data="statistics"
+          v-model:showDialog="showStatistics"
+        />
+      </div>
+
     </div>
 
     <div class="row">
@@ -68,6 +76,8 @@
     </div>
     <div v-if="debug">
     <small>
+        Statistics:
+        <pre>{{ statistics }}</pre>
         Rows:
         <pre>{{ expenseStore.expensesRows }}</pre>
         Expenses:
@@ -80,6 +90,7 @@
         <q-fab-action @click="openExpenseDialog('add', {})" color="primary" icon="add" />
         <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="primary" icon="bug_report"/>
+        <q-fab-action @click="calcStatistics" color="primary" icon="analytics"/>
         <q-fab-action @click="reload" color="primary" icon="refresh" />
       </q-fab>
     </q-page-sticky>
@@ -91,6 +102,8 @@ defineOptions({
   name: "ExpensesPage",
 });
 
+
+
 import { ref, onMounted, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import { useQuasar } from "quasar";
@@ -100,15 +113,18 @@ const expenseStore = useExpenseStore()
 
 import ExpensesDialog from 'components/ExpensesDialog.vue'
 import SelectedTripBadge from "components/SelectedTripBadge.vue";
+import StatisticsDialog from "components/StatisticsDialog.vue";
 
 const isDialogOpen = ref(false)
+const showStatistics = ref(false);
 const mode = ref('')
 const eitem = ref({})
 const $q = useQuasar()
 const router = useRouter()
 
 const filteredexpenses = ref([]);
-const columns = ref([])
+const columns = ref([]);
+const statistics = ref({});
 const debug = ref(false);
 
 const selectedTrip = reactive({
@@ -174,6 +190,11 @@ const customSort = (rows, sortBy, descending) => {
     isDialogOpen.value = true
   }
 
+  const calcStatistics = () => {
+    statistics.value = expenseStore.statisticsExpense();
+    showStatistics.value = true
+    // console.log(statistics.value)
+  }
 
   const rowclick = (e, row, index) => {
     // $q.dialog({

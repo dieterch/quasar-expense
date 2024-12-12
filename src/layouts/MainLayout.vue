@@ -87,6 +87,12 @@ const linksList = [
     caption: 'Test Page',
     icon: 'javascript',
     link: '#/test'
+  },
+  {
+    title: 'Chart',
+    caption: 'Chart Page',
+    icon: 'chart',
+    link: '#/chart'
   }
 ]
 
