@@ -1,3 +1,10 @@
+export const ellipsis = (s, l) => {
+  if (String(s).length > l) {
+    return String(s).slice(0,l) + ' ...'
+  }
+  return s
+}
+
 // de-AT dateformat => UTC ISOString
 // 15.10.2024 => "2024-10-15T00:00:00.000Z"
 export const parseDateToIso = ( datestring ) => {

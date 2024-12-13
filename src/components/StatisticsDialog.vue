@@ -1,4 +1,56 @@
+<template>
+  <q-dialog v-model="internalShowDialog" persistent>
+    <q-card style="width: 90vw; max-width: 800px;">
+      <q-card-section>
+        <div class="text-h6">Statistics Overview</div>
+      </q-card-section>
+
+      <q-card-section>
+        <q-tabs v-model="activeTab" align="justify">
+          <q-tab name="table" label="Table" />
+          <q-tab name="chart" label="Chart" />
+        </q-tabs>
+
+        <q-tab-panels v-model="activeTab">
+          <q-tab-panel name="table">
+            <div style="overflow-x: auto;">
+              <q-table
+                :rows="tableRowsWithTotals"
+                :columns="tableColumns"
+                row-key="category"
+                dense
+              />
+            </div>
+          </q-tab-panel>
+
+          <q-tab-panel name="chart">
+            <div class="pie-chart">
+              <Pie :data="chartData" :options="chartOptions" />
+            </div>
+            <div class="chart-controls">
+              <q-select
+                v-model="selectedUser"
+                :options="userOptions"
+                option-value="value"
+                label="Select User"
+                dense
+                borderless
+                class="large-dropdown"
+              />
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Close" @click="internalShowDialog = false" color="primary" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+</template>
+
 <script setup>
+import { ellipsis } from "src/utils/helpers";
 import { ref, computed, watch } from "vue";
 import { Pie } from "vue-chartjs";
 import {
@@ -60,8 +112,9 @@ const userOptions = computed(() => {
 // Table columns
 const tableColumns = computed(() => {
   const columns = [
-    { name: "category", required: true, label: "Category", align: "left", field: "category" },
-    { name: "all", label: "Totals", align: "right", field: "all" },
+    { name: "category", required: true, label: "Category",
+      align: "left", field: "category", style: 'max-width: 0px', format: (val, row) => `${ellipsis(val,10)}`},
+    { name: "all", label: "Totals", align: "right", field: "all", format: (val,row) => `${val.toFixed(0)}` },
   ];
   Object.keys(props.data.data)
     .filter((key) => key !== "all")
@@ -98,7 +151,7 @@ const tableRowsWithTotals = computed(() => {
 const chartData = computed(() => {
   const user = selectedUser.value;
   const currentData = props.data.data[user.value] || {}; // Fallback to empty object
-  const labels = Object.keys(currentData);
+  const labels = Object.keys(currentData).map(l => ellipsis(l,10));
   const amounts = Object.values(currentData).map((item) => Math.round(item.amount));
   const totalAmount = amounts.reduce((sum, val) => sum + val, 0);
   const percentages = amounts.map((value) => ((value / totalAmount) * 100).toFixed(1)); // Rounded to 1 digit
@@ -143,61 +196,10 @@ const chartOptions = ref({
 });
 </script>
 
-<template>
-  <q-dialog v-model="internalShowDialog" persistent>
-    <q-card style="width: 90vw; max-width: 800px;">
-      <q-card-section>
-        <div class="text-h6">Statistics Overview</div>
-      </q-card-section>
-
-      <q-card-section>
-        <q-tabs v-model="activeTab" align="justify">
-          <q-tab name="table" label="Table" />
-          <q-tab name="chart" label="Chart" />
-        </q-tabs>
-
-        <q-tab-panels v-model="activeTab">
-          <q-tab-panel name="table">
-            <div style="overflow-x: auto;">
-              <q-table
-                :rows="tableRowsWithTotals"
-                :columns="tableColumns"
-                row-key="category"
-                dense
-              />
-            </div>
-          </q-tab-panel>
-
-          <q-tab-panel name="chart">
-            <div class="chart-controls">
-              <q-select
-                v-model="selectedUser"
-                :options="userOptions"
-                option-value="value"
-                label="Select User"
-                dense
-                borderless
-                class="large-dropdown"
-              />
-            </div>
-            <div class="pie-chart">
-              <Pie :data="chartData" :options="chartOptions" />
-            </div>
-          </q-tab-panel>
-        </q-tab-panels>
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Close" @click="internalShowDialog = false" color="primary" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-</template>
-
 <style scoped>
 .pie-chart {
   height: 300px;
-  width: 300px;
+  width: 280px;
   margin: 0 auto;
 }
 .chart-controls {
