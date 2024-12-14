@@ -18,6 +18,7 @@
         <q-table
           dense
           flat
+          class="transparent-bg-table"
           :rows="categories"
           :columns="columns"
           row-key="id"

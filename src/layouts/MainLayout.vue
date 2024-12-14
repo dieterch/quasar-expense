@@ -1,6 +1,10 @@
 <template>
   <q-layout view="hHh Lpr fFf">
-    <q-header elevated class="bg-primary">
+    <q-img
+      src="background3.jpg"
+      class="fit absolute"
+    />
+    <q-header elevated class="bg-primary" >
       <q-toolbar>
         <q-btn
           flat

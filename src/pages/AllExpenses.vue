@@ -6,6 +6,7 @@
         <q-table
           dense
           flat
+          class="transparent-bg-table"
           :rows="expenses"
           :columns="columns"
           row-key="id"

@@ -29,6 +29,7 @@
           title="Trip Expenses"
           dense
           flat
+          class="transparent-bg-table"
           :rows="filteredexpenses"
           :columns="columns"
           row-key="id"

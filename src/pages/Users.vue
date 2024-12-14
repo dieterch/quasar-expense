@@ -19,6 +19,7 @@
           :title="selectedTrip"
           dense
           flat
+          class="transparent-bg-table"
           :rows="usersRows"
           :columns="columns"
           row-key="id"
