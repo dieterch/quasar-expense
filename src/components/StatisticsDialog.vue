@@ -13,7 +13,7 @@
 
         <q-tab-panels v-model="activeTab">
           <q-tab-panel name="table">
-            <div style="overflow-x: auto;">
+            <div style="overflow-x: auto;" class="text-body2">
               <q-table
                 :rows="tableRowsWithTotals"
                 :columns="tableColumns"
@@ -27,7 +27,7 @@
             <div class="pie-chart">
               <Pie :data="chartData" :options="chartOptions" />
             </div>
-            <div class="chart-controls">
+            <div class="chart-controls  text-body2">
               <q-select
                 v-model="selectedUser"
                 :options="userOptions"

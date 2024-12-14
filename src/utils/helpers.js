@@ -1,3 +1,6 @@
+import { exportFile } from "quasar";
+import writeXlsxFile from 'write-excel-file'
+
 export const ellipsis = (s, l) => {
   if (String(s).length > l) {
     return String(s).slice(0,l) + ' ...'
@@ -40,6 +43,8 @@ function wrapCsvValue (val, formatFn, row) {
 
 // export to CSV, currently a not tested example from Quasar documentaton.
 export const exportTable = (rows, columns) => {
+  console.log('rows',rows)
+  console.log('columns',columns)
   // naive encoding to csv format
   const content = [columns.map(col => wrapCsvValue(col.label))].concat(
     rows.map(row => columns.map(col => wrapCsvValue(
@@ -64,4 +69,79 @@ export const exportTable = (rows, columns) => {
       icon: 'warning'
     })
   }
+}
+
+//   id          String   @id @default(uuid())
+//   amount      Float
+//   currency    String
+//   date        DateTime
+//   location    String
+//   description String?
+//   trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+//   tripId      String
+//   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   userId      String
+//   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+//   categoryId  String
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+const schema = [
+  {
+    column: 'Datum',
+    type: Date,
+    format: 'dd.mm.yyyy',
+    value: rec => rec.date
+  },
+  {
+    column: 'Kategorie',
+    type: String,
+    value: rec => rec.category,
+  },
+  {
+    column: 'Titel',
+    type: String,
+    value: rec => rec.description
+  },
+  {
+    column: 'Ausgabe',
+    type: Number,
+    format: '#,##0.00',
+    value: rec => rec.amount
+  },
+  {
+    column: 'Währung',
+    type: String,
+    value: rec => rec.currency
+  },
+  {
+    column: 'Teilnehmer',
+    type: String,
+    value: rec => rec.user
+  },
+  {
+    column: 'Reise',
+    type: String,
+    value: rec => rec.tripname,
+  },
+]
+
+export const saveToExcel = async( lexpenses, filename) => {
+
+  // design objects array:
+  const lobjects = lexpenses.map(rec => ({
+    date: new Date(rec.date),
+    tripname: rec.trip.name,
+    category: rec.category.name,
+    description: rec.description,
+    amount: rec.amount,
+    currency: rec.currency,
+    user: rec.user.name,
+  }))
+
+  const lfilename = `${filename}.xlsx`
+  await writeXlsxFile(lobjects, {
+    schema,
+    fileName: lfilename  // `${lselectedTrip.value.name}.xlsx`
+  })
 }

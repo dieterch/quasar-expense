@@ -41,6 +41,11 @@
           >
           <template v-slot:top>
             <SelectedTripBadge :selectedTrip="selectedTrip" @click="router.push('/trips')"/>
+              <div v-if="statistics">
+                <q-chip color="transparent" icon="functions">{{ statistics.total.toFixed(0) }} €</q-chip>
+                <q-chip color="transparent" icon="event">{{ statistics.avg.toFixed(0) }} €</q-chip>
+                <q-chip color="transparent" icon="date_range">{{ statistics.totalDays }} days</q-chip>
+              </div>
           </template>
 
           <template v-slot:header-cell-description="props">
@@ -48,7 +53,6 @@
               {{ props.col.label }}
             </q-th>
           </template>
-
 
           <template v-slot:body-cell-description="props">
             <q-td :props="props">
@@ -88,7 +92,7 @@
     <q-page-sticky position="bottom" :offset="[18, 18]">
       <q-fab icon="keyboard_arrow_up" direction="up" color="accent" padding="10px">
         <q-fab-action @click="openExpenseDialog('add', {})" color="primary" icon="add" />
-        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
+        <q-fab-action @click="exportExpenses" color="primary" icon="mdi-file-excel" />
         <q-fab-action @click="debug = !debug" color="primary" icon="bug_report"/>
         <q-fab-action @click="calcStatistics" color="primary" icon="analytics"/>
         <q-fab-action @click="reload" color="primary" icon="refresh" />
@@ -102,12 +106,10 @@ defineOptions({
   name: "ExpensesPage",
 });
 
-
-
 import { ref, onMounted, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import { useQuasar } from "quasar";
-import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
+import { exportTable, saveToExcel, parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from 'stores/expense-store';
 const expenseStore = useExpenseStore()
 
@@ -124,7 +126,7 @@ const router = useRouter()
 
 const filteredexpenses = ref([]);
 const columns = ref([]);
-const statistics = ref({});
+const statistics = ref(null);
 const debug = ref(false);
 
 const selectedTrip = reactive({
@@ -138,6 +140,7 @@ const reload = async() => {
   await expenseStore.postTripExpenses(localdata.id)
   filteredexpenses.value = expenseStore.expensesRows
   columns.value = expenseStore.tripexpensesColumns
+  statistics.value = expenseStore.statisticsExpense();
 }
 
 onMounted(async () => {
@@ -240,6 +243,11 @@ const customSort = (rows, sortBy, descending) => {
       console.log('you pressed cancel.')
     })
   };
+
+  const exportExpenses = async() => {
+    // exportTable( expenseStore.expensesRows, expenseStore.allexpansesColumns)
+    await saveToExcel(expenseStore.expenses, selectedTrip.name)
+  }
 
 </script>
 

@@ -143,6 +143,15 @@ export const useExpenseStore = defineStore("expense", () => {
         style: 'max-width: 150px',
         sortable: true,
       },
+      {
+        name: "description",
+        align: "left",
+        label: "Description",
+        field: "description",
+        style: "max-width: 150px",
+        headerStyle: 'padding-left: 24px;',
+        sortable: true,
+      },
      ...expensesColumnsEnd.value]
   )
 
@@ -212,7 +221,7 @@ export const useExpenseStore = defineStore("expense", () => {
     const statistics = {
       total : totalsum,
       totalDays: Math.floor(tdays),
-      avg : totalsum / Math.floor(tdays),
+      avg : totalsum / Math.ceil(tdays),
     }
     const data = {all: sumExpensesByCategory(expenses.value)};
     uniqueUserNames.map(userName => {
