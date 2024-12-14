@@ -78,15 +78,12 @@
 
     <q-page-sticky position="bottom" :offset="[18, 18]">
       <q-fab
-        icon="add_circle"
+        icon="keyboard_arrow_up"
         direction="up"
-        color="primary"
-        class="bg-primary-2"
-        style="opacity: 70%"
-        flat
+        color="accent"
         padding="10px"
       >
-        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
+        <q-fab-action @click="exportExpenses" color="primary" icon="mdi-file-excel" />
         <q-fab-action
           @click="debug = !debug"
           color="primary"
@@ -106,10 +103,11 @@ defineOptions({
 import { ref, onMounted } from "vue";
 // import { api } from "boot/axios";
 import { useQuasar } from "quasar";
+import { exportTable, saveToExcel, parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from "stores/expense-store";
 import { storeToRefs } from "pinia";
 
-const storeExpense = useExpenseStore();
+const expenseStore = useExpenseStore();
 const $q = useQuasar();
 
 const expenses = ref([]);
@@ -117,9 +115,9 @@ const columns = ref([]);
 const debug = ref(false);
 
 onMounted(async () => {
-  await storeExpense.getExpenses();
-  expenses.value = storeExpense.expensesRows;
-  columns.value = storeExpense.allexpansesColumns;
+  await expenseStore.getExpenses();
+  expenses.value = expenseStore.expensesRows;
+  columns.value = expenseStore.allexpansesColumns;
 });
 
 const initialPagination = {
@@ -166,8 +164,14 @@ const deleteExpense = (item) => {
 };
 
 const refresh = () => {
-  storeExpense.fetchExpenses();
+  expenseStore.fetchExpenses();
 };
+
+const exportExpenses = async() => {
+  // exportTable( expenseStore.expensesRows, expenseStore.allexpansesColumns)
+  await saveToExcel(expenseStore.expenses, 'allexpenses')
+}
+
 </script>
 
 <style>

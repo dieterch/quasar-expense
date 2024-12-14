@@ -82,18 +82,18 @@ const linksList = [
     icon: 'account_balance_wallet',
     link: '#/allexpenses'
   },
-  {
-    title: 'Test',
-    caption: 'Test Page',
-    icon: 'javascript',
-    link: '#/test'
-  },
-  {
-    title: 'Chart',
-    caption: 'Chart Page',
-    icon: 'chart',
-    link: '#/chart'
-  }
+  // {
+  //   title: 'Test',
+  //   caption: 'Test Page',
+  //   icon: 'javascript',
+  //   link: '#/test'
+  // },
+  // {
+  //   title: 'Chart',
+  //   caption: 'Chart Page',
+  //   icon: 'chart',
+  //   link: '#/chart'
+  // }
 ]
 
 const leftDrawerOpen = ref(false)

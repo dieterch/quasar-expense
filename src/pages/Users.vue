@@ -76,7 +76,6 @@
     <q-page-sticky position="bottom" :offset="[18, 18]">
       <q-fab icon="keyboard_arrow_up" direction="up" color="accent" padding="10px">
         <q-fab-action @click="openUserDialog('add', {})" color="primary" icon="add" />
-        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action
           @click="debug = !debug"
           color="primary"

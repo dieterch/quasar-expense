@@ -230,9 +230,9 @@ const handleForm = async (method) => {
 
   let payload = { ...formdata.value }
 
-  if (formdata.value.password != '') {
+  if (( 'password' in formdata.value) && (formdata.value.password != '')) {
             payload.password = hashSync(formdata.value.password, 10)
-        } else console.log('Password not changed.')
+  } else console.log('Password not changed.')
 
   console.log('method:',method)
   console.log('payload:',JSON.stringify(payload, null,2))
