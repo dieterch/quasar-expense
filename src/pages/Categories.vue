@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="row q-mt-sm">
+    <div class="row">
       <div class="col-12">
         <q-table
           dense
