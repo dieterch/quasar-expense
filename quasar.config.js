@@ -62,6 +62,7 @@ module.exports = configure(function (/* ctx */) {
       // analyze: true,
       env: {
         APIURL:process.env.APIURL,
+        APITOKEN:process.env.APITOKEN
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

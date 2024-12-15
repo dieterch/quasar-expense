@@ -27,7 +27,7 @@ export const useCategoryStore = defineStore("category", () => {
     const response = await api.request('/api/categories', {
         method: method,
         data: payload,
-        headers: { "Content-Type": "application/json" },
+        // headers: { "Content-Type": "application/json" },
     })
     // user has to reload database to update data
   }
@@ -36,7 +36,7 @@ export const useCategoryStore = defineStore("category", () => {
   const deleteCategory = async (id) => {
     await api.delete("/api/categories",{
       data: { id: id},
-      headers: { "Content-Type": "application/json" },
+      // headers: { "Content-Type": "application/json" },
     })
   }
 

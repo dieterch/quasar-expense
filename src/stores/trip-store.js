@@ -76,7 +76,7 @@ export const useTripStore = defineStore("trip", () => {
     const response = await api.request('/api/trips', {
         method: method,
         data: payload,
-        headers: { "Content-Type": "application/json" },
+        // headers: { "Content-Type": "application/json" },
     })
     // user has to reload database to update data
   }
@@ -85,7 +85,7 @@ export const useTripStore = defineStore("trip", () => {
   const deleteTrip = async (id) => {
     await api.delete("/api/trips",{
       data: { id: id},
-      headers: { "Content-Type": "application/json" },
+      // headers: { "Content-Type": "application/json" },
     })
   }
 

@@ -143,15 +143,15 @@ export const useExpenseStore = defineStore("expense", () => {
         style: 'max-width: 150px',
         sortable: true,
       },
-      {
-        name: "description",
-        align: "left",
-        label: "Description",
-        field: "description",
-        style: "max-width: 150px",
-        headerStyle: 'padding-left: 24px;',
-        sortable: true,
-      },
+      // {
+      //   name: "description",
+      //   align: "left",
+      //   label: "Description",
+      //   field: "description",
+      //   style: "max-width: 150px",
+      //   headerStyle: 'padding-left: 24px;',
+      //   sortable: true,
+      // },
      ...expensesColumnsEnd.value]
   )
 
@@ -171,10 +171,17 @@ export const useExpenseStore = defineStore("expense", () => {
 
   // action: load filtered expenses from database
   const postTripExpenses = async (tripid) => {
-    const response = await api.post("/api/tripexpenses",{
-      id: tripid,
-      headers: { "Content-Type": "application/json" },
-    })
+    const response = await api.post("/api/tripexpenses",
+      // body:
+      { id: tripid },
+      // headers:
+      // {
+      //   headers: {
+      //     Authorization: 'Bearer token',// `Bearer ${token}`,
+      //     'Content-Type': 'application/json',
+      //   },
+      // }
+    )
     expenses.value = response.data
   }
 
@@ -183,7 +190,7 @@ export const useExpenseStore = defineStore("expense", () => {
     const response = await api.request('/api/expenses', {
         method: method,
         data: payload,
-        headers: { "Content-Type": "application/json" },
+        // headers: { "Content-Type": "application/json" },
     })
     // user has to reload database to update data
   }
@@ -192,7 +199,7 @@ export const useExpenseStore = defineStore("expense", () => {
   const deleteExpense = async (id) => {
     await api.delete("/api/expenses",{
       data: { id: id},
-      headers: { "Content-Type": "application/json" },
+      // headers: { "Content-Type": "application/json" },
     })
   }
 

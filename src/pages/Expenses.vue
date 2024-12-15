@@ -137,11 +137,13 @@ const selectedTrip = reactive({
 
 const reload = async() => {
   const localdata = $q.localStorage.getItem('selectedTrip')
-  if (localdata) Object.assign(selectedTrip, localdata)
-  await expenseStore.postTripExpenses(localdata.id)
-  filteredexpenses.value = expenseStore.expensesRows
-  columns.value = expenseStore.tripexpensesColumns
-  statistics.value = expenseStore.statisticsExpense();
+  if (localdata) {
+    Object.assign(selectedTrip, localdata)
+    await expenseStore.postTripExpenses(localdata.id)
+    filteredexpenses.value = expenseStore.expensesRows
+    columns.value = expenseStore.tripexpensesColumns
+    statistics.value = expenseStore.statisticsExpense();
+  }
 }
 
 onMounted(async () => {

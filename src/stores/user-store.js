@@ -78,7 +78,7 @@ export const useUserStore = defineStore("user", () => {
     const response = await api.request('/api/users', {
         method: method,
         data: payload,
-        headers: { "Content-Type": "application/json" },
+        // headers: { "Content-Type": "application/json" },
     })
     // user has to reload database to update data
   }
@@ -87,7 +87,7 @@ export const useUserStore = defineStore("user", () => {
   const deleteUser = async (id) => {
   await api.delete("/api/users",{
     data: { id: id},
-    headers: { "Content-Type": "application/json" },
+    // headers: { "Content-Type": "application/json" },
   })
   }
 
@@ -95,7 +95,7 @@ export const useUserStore = defineStore("user", () => {
   const postTripUsers = async (tripid) => {
     const response = await api.post("/api/tripusers",{
       id: tripid,
-      headers: { "Content-Type": "application/json" },
+      // headers: { "Content-Type": "application/json" },
     })
     users.value = response.data
   }

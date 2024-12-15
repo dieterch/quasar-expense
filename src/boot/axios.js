@@ -8,8 +8,12 @@ import axios from 'axios'
 // "export default () => {}" function below (which runs individually
 // for each client)
 
-// console.log(process.env)
-// console.log('APIURL',process.env.APIURL)
+// console.log('APIURL',process.env.APIURL, 'APITOKEN', process.env.APITOKEN)
+
+// set default request headers
+axios.defaults.headers.common['Authorization'] = `Bearer ${process.env.APITOKEN}`;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+
 const api = axios.create({ baseURL: process.env.APIURL })
 
 export default boot(({ app }) => {
