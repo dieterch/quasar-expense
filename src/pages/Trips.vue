@@ -81,7 +81,6 @@
     <q-page-sticky position="bottom" :offset="[18, 18]">
       <q-fab icon="keyboard_arrow_up" direction="up" color="accent" padding="10px">
         <q-fab-action @click="openTripDialog('add', {})" color="primary" icon="add" />
-        <q-fab-action @click="onClick" color="primary" icon="mdi-file-excel" />
         <q-fab-action
           @click="debug = !debug"
           color="primary"
@@ -202,6 +201,19 @@ const openTripDialog = (pmode, pitem) => {
 }
 
 const deleteTrip = (item) => {
+
+    if (item.noExpenses > 0) {
+        $q.dialog({
+        title: 'Error',
+        message: htmlDialogContent(
+        'mdi-alert-outline', 'orange',
+        `Cannot delete Trip<br>${item.noExpenses} Expense(s)` ),
+        //message: `Cannot delete Trips with Expenses (${item.noExpenses}).`,
+        html: true
+      })
+      return
+    }
+
     $q.dialog({
       title: 'Delete ?',
       //message: `Delete "${item.description}". Continue?`,

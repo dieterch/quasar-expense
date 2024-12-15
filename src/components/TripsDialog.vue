@@ -99,7 +99,7 @@
             v-close-popup
           />
         </q-card-actions>
-        <small v-if="true">
+        <small v-if="false">
           tripexpenses:
           <pre>{{ tripexpenses }}</pre>
           Formdata:

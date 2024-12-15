@@ -1,6 +1,14 @@
 <template>
   <!--q-page class="flex flex-start"-->
   <q-page>
+
+    <div class="col-12">
+        <StatisticsDialog
+          :data="statistics"
+          v-model:showDialog="showStatistics"
+        />
+    </div>
+
     <div class="row">
       <div class="col-12">
         <q-table
@@ -16,7 +24,11 @@
         >
 
           <template v-slot:top>
-            <div style="height: 30px;"></div>
+            <div v-if="statistics" @click="showStatistics = true">
+              <q-chip size="sm" color="primary" icon="functions" square class="q-ml-none">{{ statistics.total.toFixed(0) }} €</q-chip>
+              <q-chip size="sm" color="primary" icon="event" square>{{ statistics.avg.toFixed(0) }} €</q-chip>
+              <q-chip size="sm" color="primary" icon="date_range" square>{{ statistics.totalDays }} days</q-chip>
+            </div>
           </template>
 
           <template v-slot:body-cell-trip="props">
@@ -90,7 +102,7 @@
           color="primary"
           icon="bug_report"
         />
-        <q-fab-action @click="refresh" color="primary" icon="refresh" />
+        <q-fab-action @click="reload" color="primary" icon="refresh" />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -106,19 +118,27 @@ import { ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { exportTable, saveToExcel, parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from "stores/expense-store";
+import StatisticsDialog from "components/StatisticsDialog.vue";
 import { storeToRefs } from "pinia";
 
 const expenseStore = useExpenseStore();
 const $q = useQuasar();
 
 const expenses = ref([]);
+const showStatistics = ref(false);
+const statistics = ref(null);
 const columns = ref([]);
 const debug = ref(false);
 
-onMounted(async () => {
+const reload = async() => {
   await expenseStore.getExpenses();
   expenses.value = expenseStore.expensesRows;
   columns.value = expenseStore.allexpansesColumns;
+  statistics.value = expenseStore.statisticsExpense();
+}
+
+onMounted(async () => {
+  await reload()
 });
 
 const initialPagination = {
@@ -164,9 +184,9 @@ const deleteExpense = (item) => {
   console.log(item);
 };
 
-const refresh = () => {
-  expenseStore.fetchExpenses();
-};
+// const refresh = () => {
+//   expenseStore.fetchExpenses();
+// };
 
 const exportExpenses = async() => {
   // exportTable( expenseStore.expensesRows, expenseStore.allexpansesColumns)
