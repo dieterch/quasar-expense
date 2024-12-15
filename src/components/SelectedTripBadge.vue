@@ -10,9 +10,9 @@
 
       <div class="text-h6">
       {{  props.selectedTrip.name }}
-      <q-badge transparent align="center" color="primary">
+      <!--q-badge transparent align="center" color="primary">
         toggle
-      </q-badge>
+      </q-badge-->
     </div>
 
   </div>

@@ -41,12 +41,12 @@
           @row-click="rowclick"
           >
           <template v-slot:top>
-            <SelectedTripBadge :selectedTrip="selectedTrip" @click="router.push('/trips')"/>
-              <div v-if="statistics">
-                <q-chip color="transparent" icon="functions">{{ statistics.total.toFixed(0) }} €</q-chip>
-                <q-chip color="transparent" icon="event">{{ statistics.avg.toFixed(0) }} €</q-chip>
-                <q-chip color="transparent" icon="date_range">{{ statistics.totalDays }} days</q-chip>
-              </div>
+            <SelectedTripBadge :selectedTrip="selectedTrip" @click="router.push('/trips')" class="q-mr-sm"/>
+            <div v-if="statistics" @click="showStatistics = true">
+              <q-chip size="sm" color="primary" icon="functions" square class="q-ml-none">{{ statistics.total.toFixed(0) }} €</q-chip>
+              <q-chip size="sm" color="primary" icon="event" square>{{ statistics.avg.toFixed(0) }} €</q-chip>
+              <q-chip size="sm" color="primary" icon="date_range" square>{{ statistics.totalDays }} days</q-chip>
+            </div>
           </template>
 
           <template v-slot:header-cell-description="props">

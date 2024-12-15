@@ -7,7 +7,10 @@ import axios from 'axios'
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({ baseURL: 'http://192.168.15.175:5678' })
+
+// console.log(process.env)
+// console.log('APIURL',process.env.APIURL)
+const api = axios.create({ baseURL: process.env.APIURL })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
