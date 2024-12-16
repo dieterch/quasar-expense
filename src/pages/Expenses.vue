@@ -110,7 +110,7 @@ defineOptions({
 import { ref, onMounted, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import { useQuasar } from "quasar";
-import { exportTable, saveToExcel, parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
+import { shareText, saveToExcel, parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from 'stores/expense-store';
 const expenseStore = useExpenseStore()
 

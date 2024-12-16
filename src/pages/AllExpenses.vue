@@ -116,7 +116,7 @@ defineOptions({
 import { ref, onMounted } from "vue";
 // import { api } from "boot/axios";
 import { useQuasar } from "quasar";
-import { exportTable, saveToExcel, parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
+import { saveToExcel, parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from "stores/expense-store";
 import StatisticsDialog from "components/StatisticsDialog.vue";
 import { storeToRefs } from "pinia";
