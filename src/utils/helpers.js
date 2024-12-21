@@ -4,6 +4,9 @@ import { Share } from '@capacitor/share';
 import { Platform } from 'quasar';
 import writeXlsxFile from 'write-excel-file';
 
+import fs from 'fs';
+// import { dialog } from '@electron/remote';
+
 
 export const shareText = async () => {
   try {
@@ -212,6 +215,39 @@ export const saveAndShareExcelFile = async (lexpenses, schema, filename) => {
     reader.readAsDataURL(blob);
   } catch (error) {
     console.error('Error saving and sharing file:', error.message || error);
+  }
+};
+
+export const saveToExcelElectron = async (lexpenses, filename) => {
+  const lobjects = lexpenses.map(rec => ({
+    date: new Date(rec.date),
+    tripname: rec.trip.name,
+    category: rec.category.name,
+    description: rec.description,
+    amount: rec.amount,
+    currency: rec.currency,
+    user: rec.user.name,
+  }));
+
+  // Generate Excel file as a Buffer
+  const buffer = await writeXlsxFile(lobjects, {
+    schema,
+    fileName: null,
+    writeOptions: { type: 'buffer' }, // Output as Buffer for Electron
+  });
+
+  // Open a save dialog to get the file path
+  // const { filePath } = await dialog.showSaveDialog({
+  //   title: 'Save Excel File',
+  //   defaultPath: `${filename}.xlsx`,
+  //   filters: [{ name: 'Excel Files', extensions: ['xlsx'] }],
+  // });
+
+  const filePath = 'test.xlsx'
+
+  if (filePath) {
+    fs.writeFileSync(filePath, buffer);
+    alert(`File saved as ${filePath}`);
   }
 };
 
