@@ -185,6 +185,7 @@ const dialogcategories = ref([]);
 const dialogusers = ref([]);
 const currencies = [
   { name: "USD", symbol: "$", factor: 0.92 },
+  { name: "GPB", symbol: "£", factor: 1.15 },
   { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
 ];
 
