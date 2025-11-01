@@ -34,7 +34,14 @@
     "@quasar/app-vite": "^1.9.0",
     "autoprefixer": "^10.4.2",
     "electron": "^33.2.1",
-    "postcss": "^8.4.14"
+    "postcss": "^8.4.14",
+    "workbox-build": "7.0.x",
+    "workbox-cacheable-response": "7.0.x",
+    "workbox-core": "7.0.x",
+    "workbox-expiration": "7.0.x",
+    "workbox-precaching": "7.0.x",
+    "workbox-routing": "7.0.x",
+    "workbox-strategies": "7.0.x"
   },
   "engines": {
     "node": "^20 || ^18 || ^16",
