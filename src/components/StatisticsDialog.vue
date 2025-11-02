@@ -186,7 +186,7 @@ const chartOptions = ref({
 
           // Format the tooltip with labels left-aligned and values right-aligned
           return [
-            `  Amount:  ${amount.toFixed(1).padStart(12, " ")}€`,
+            `  Amount:  ${amount.toFixed(1).padStart(12, " ")}`,
             `  Share:          ${percentage.padStart(8, " ")}%`,
           ];
         },

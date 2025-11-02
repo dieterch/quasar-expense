@@ -109,7 +109,15 @@ export const useExpenseStore = defineStore("expense", () => {
         align: "right",
         label: "Expense",
         field: "amount",
-        format: (val) => `${val} €`,
+        format: (val) => `${val}`,
+        sortable: true,
+      },
+      {
+        name: "currency",
+        align: "left",
+        label: "",
+        field: "currency",
+        format: (val) => `${val}`,
         sortable: true,
       },
       {

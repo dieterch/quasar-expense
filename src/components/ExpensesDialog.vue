@@ -73,8 +73,8 @@
               dense
               v-model="lexpense.currency"
               :options="currencies"
-              option-label="symbol"
-              option-value="symbol"
+              option-label="name"
+              option-value="name"
               label="Currency"
               :rules="[(v) => !!v || 'Currency is required']"
               @blur="validate"
@@ -185,7 +185,7 @@ const dialogcategories = ref([]);
 const dialogusers = ref([]);
 const currencies = [
   { name: "USD", symbol: "$", factor: 0.92 },
-  { name: "GPB", symbol: "£", factor: 1.15 },
+  { name: "GBP", symbol: "£", factor: 1.15 },
   { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
 ];
 
@@ -289,7 +289,7 @@ const onReset = () => {
     category: null,
     amount: null,
     user: null,
-    currency: "€",
+    currency: { name: "EUR", symbol: "€", factor: 1.0 },
     date: formatDate(new Date(),'DD.MM.YYYY'),
   };
   if (expenseForm.value) {
@@ -308,7 +308,7 @@ const handleForm = async (method) => {
       amount: parseFloat(lexpense.value.amount),
       date: parseDateToIso(lexpense.value.date),
       location: "",
-      currency: lexpense.value.currency,
+      currency: lexpense.value.currency.name,
       description: lexpense.value.description,
       trip: { connect: { id: props.selectedTrip.id } },
       user: { connect: { id: lexpense.value.user.id } },
@@ -322,7 +322,7 @@ const handleForm = async (method) => {
       amount: parseFloat(lexpense.value.amount),
       date: parseDateToIso(lexpense.value.date),
       location: "",
-      currency: lexpense.value.currency,
+      currency: lexpense.value.currency.name,
       description: lexpense.value.description,
       trip: { connect: { id: props.selectedTrip.id } },
       user: { connect: { id: lexpense.value.user.id } },
