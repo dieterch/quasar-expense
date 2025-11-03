@@ -86,6 +86,12 @@ const linksList = [
     icon: 'account_balance_wallet',
     link: '#/allexpenses'
   },
+  {
+    title: 'Currencies',
+    caption: 'Currency Page',
+    icon: 'payments',
+    link: '#/currencies'
+  },
   // {
   //   title: 'Test',
   //   caption: 'Test Page',
