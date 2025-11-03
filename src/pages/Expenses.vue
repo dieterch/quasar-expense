@@ -36,7 +36,7 @@
           separator="horizontal"
           :sort-method="customSort"
           :pagination="initialPagination"
-          hide-pagination
+          hide-pagination-off
           hide-no-data
           @row-click="rowclick"
           >

@@ -60,7 +60,7 @@ const totalDays = (expenses) => {
 // ----------------
 // Helper Functions
 // ----------------
-// expenses: transform a complex list of records from the databas to a flat list of records compatible with Q-Table
+// expenses: transform a complex list of records from the database to a flat list of records compatible with Q-Table
 const eHelper = (list) => {
   let rows = [];
   list.map((row) => {
