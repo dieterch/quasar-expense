@@ -3,6 +3,7 @@
     <q-card style="width: 90vw; max-width: 800px;">
       <q-card-section>
         <div class="text-h6">Statistics Overview</div>
+        <div class="text-h12">all in €</div>
       </q-card-section>
 
       <q-card-section>
@@ -114,12 +115,18 @@ const tableColumns = computed(() => {
   const columns = [
     { name: "category", required: true, label: "Category",
       align: "left", field: "category", style: 'max-width: 0px', format: (val, row) => `${ellipsis(val,10)}`},
-    { name: "all", label: "Totals", align: "right", field: "all", format: (val,row) => `${val.toFixed(0)}` },
+    { name: "all", label: "Totals", align: "right", field: "all", format: (val,row) => `${val.toFixed(2)}` },
   ];
   Object.keys(props.data.data)
     .filter((key) => key !== "all")
     .forEach((user) => {
-      columns.push({ name: user, label: user, align: "right", field: user });
+      columns.push({
+        name: user,
+        label: user,
+        align: "right",
+        field: user,
+        format: (val, row) => Number(val).toFixed(2)
+      });
     });
   return columns;
 });

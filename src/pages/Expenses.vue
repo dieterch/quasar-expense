@@ -43,8 +43,8 @@
           <template v-slot:top>
             <SelectedTripBadge :selectedTrip="selectedTrip" @click="router.push('/trips')" class="q-mr-sm"/>
             <div v-if="statistics" @click="showStatistics = true">
-              <q-chip size="sm" color="primary" icon="functions" square class="q-ml-none">{{ statistics.total.toFixed(0) }}</q-chip>
-              <q-chip size="sm" color="primary" icon="event" square>{{ statistics.avg.toFixed(0) }}</q-chip>
+              <q-chip size="sm" color="primary" icon="functions" square class="q-ml-none">{{ statistics.total.toFixed(1) }} EUR</q-chip>
+              <q-chip size="sm" color="primary" icon="event" square>{{ statistics.avg.toFixed(1) }} EUR</q-chip>
               <q-chip size="sm" color="primary" icon="date_range" square>{{ statistics.totalDays }} days</q-chip>
             </div>
           </template>

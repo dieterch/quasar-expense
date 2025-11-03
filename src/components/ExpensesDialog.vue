@@ -173,6 +173,7 @@ import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from "stores/expense-store";
 import { useUserStore } from "stores/user-store";
 import { useCategoryStore } from "stores/category-store";
+import { currencies } from "stores/expense-store";
 const expenseStore = useExpenseStore();
 const userStore = useUserStore();
 const categoryStore = useCategoryStore();
@@ -183,11 +184,6 @@ const emit = defineEmits(["refresh", "dialog"]);
 // Dropdown data
 const dialogcategories = ref([]);
 const dialogusers = ref([]);
-const currencies = [
-  { name: "USD", symbol: "$", factor: 0.92 },
-  { name: "GBP", symbol: "£", factor: 1.15 },
-  { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
-];
 
 // Form reference
 const expenseForm = ref(null);

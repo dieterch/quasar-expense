@@ -3,7 +3,11 @@ import { defineStore } from "pinia";
 import { date } from 'quasar'
 import { api } from "boot/axios";
 
-
+export const currencies = [
+  { name: "USD", symbol: "$", factor: 0.92 },
+  { name: "GBP", symbol: "£", factor: 1.15 },
+  { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
+];
 
 // -----------------
 // Expense Satistics
@@ -12,7 +16,7 @@ const sumExpensesByCategory = (expenses, userName = null) => {
   const categorySums = expenses.reduce((acc, rec) => {
       if (!userName || rec.user.name === userName) {
           const category = rec.category.name;
-          acc[category] = (acc[category] || 0) + rec.amount;
+          acc[category] = (acc[category] || 0) + calcToEuro(rec.amount, rec.currency, currencies);
       }
       return acc;
   }, {});
@@ -25,7 +29,7 @@ const sumExpensesByCategory = (expenses, userName = null) => {
   for (const [category, amount] of Object.entries(categorySums)) {
           categorySummary[category] = {
               amount,
-              percentage: totalAmount ? ((amount / totalAmount) * 100).toFixed(0) : 0,
+              percentage: totalAmount ? ((amount / totalAmount) * 100).toFixed(2) : 0,
           };
   }
   return categorySummary;
@@ -37,7 +41,8 @@ const getUniqueUserNames = (expenses) => {
 };
 
 const totalAmount = (expenses) => {
-  return expenses.reduce((total, expense) => total + expense.amount, 0);
+  // return expenses.reduce((total, expense) => total + expense.amount, 0);
+  return expenses.reduce((total, expense) => total + calcToEuro(expense.amount, expense.currency, currencies), 0);
 };
 
 
@@ -60,6 +65,24 @@ const totalDays = (expenses) => {
 // ----------------
 // Helper Functions
 // ----------------
+// calc foreign curreny to Euro
+const calcToEuro = (amount, currency, currencies) => {
+
+  const rates = {};
+  currencies.forEach((curr) => {
+    rates[curr.name] = curr.factor;
+  });
+
+  const rate = rates[currency];
+
+  if (rate) {
+    return amount * rate;
+  } else {
+    console.warn(`No exchange rate found for currency: ${currency}`);
+    return amount; // Fallback: return original amount if no rate found
+  }
+};
+
 // expenses: transform a complex list of records from the database to a flat list of records compatible with Q-Table
 const eHelper = (list) => {
   let rows = [];
