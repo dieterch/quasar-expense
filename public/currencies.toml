@@ -1,0 +1,14 @@
+[[currencies]]
+name = "USD"
+symbol = "$"
+factor = 0.92
+
+[[currencies]]
+name = "GBP"
+symbol = "£"
+factor = 1.23
+
+[[currencies]]
+name = "EUR"
+symbol = "€"
+factor = 1.0

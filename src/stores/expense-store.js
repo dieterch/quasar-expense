@@ -5,7 +5,7 @@ import { api } from "boot/axios";
 
 export const currencies = [
   { name: "USD", symbol: "$", factor: 0.92 },
-  { name: "GBP", symbol: "£", factor: 1.15 },
+  { name: "GBP", symbol: "£", factor: 1.23 },
   { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
 ];
 
