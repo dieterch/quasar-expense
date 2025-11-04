@@ -1,5 +1,5 @@
 <template>
-  <q-page padding>
+  <q-page>
     <q-card>
       <q-card-section class="row items-center q-pa-sm">
         <div class="text-h6 col">Currencies</div>
@@ -9,7 +9,7 @@
       <q-separator />
 
       <q-card-section>
-        <q-table :rows="currencies" :columns="columns" row-key="name" dense>
+        <q-table :rows="currencies" :columns="columns" row-key="name" dense :pagination="initialPagination">
           <template v-slot:body-cell-actions="props">
             <q-td align="center">
               <q-btn dense flat icon="edit" color="primary" @click="openDialog(props.row)" />
@@ -32,6 +32,10 @@ import CurrenciesDialog from "src/components/CurrenciesDialog.vue";
 const store = useCurrencyStore();
 const showDialog = ref(false);
 const editedCurrency = ref(null);
+
+const initialPagination = {
+  rowsPerPage: 10,
+};
 
 const columns = computed(() => [
   { name: "name", label: "Name", field: "name", align: "left" },

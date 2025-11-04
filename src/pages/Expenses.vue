@@ -114,6 +114,9 @@ import { shareText, saveToExcel, parseDateToIso, htmlDialogContent } from 'src/u
 import { useExpenseStore } from 'stores/expense-store';
 const expenseStore = useExpenseStore()
 
+import { useCurrencyStore } from 'stores/currency-store';
+const currencyStore = useCurrencyStore();
+
 import ExpensesDialog from 'components/ExpensesDialog.vue'
 import SelectedTripBadge from "components/SelectedTripBadge.vue";
 import StatisticsDialog from "components/StatisticsDialog.vue";
@@ -136,6 +139,7 @@ const selectedTrip = reactive({
 });
 
 const reload = async() => {
+  currencyStore.getCurrencies()
   const localdata = $q.localStorage.getItem('selectedTrip')
   if (localdata) {
     Object.assign(selectedTrip, localdata)

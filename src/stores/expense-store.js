@@ -2,12 +2,11 @@ import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import { date } from 'quasar'
 import { api } from "boot/axios";
+import { useCurrencyStore } from "src/stores/currency-store";
 
-export const currencies = [
-  { name: "USD", symbol: "$", factor: 0.92 },
-  { name: "GBP", symbol: "£", factor: 1.23 },
-  { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
-];
+// Zugriff auf Currency-Store
+const currencyStore = useCurrencyStore();
+const currenciesList = computed(() => currencyStore.currencies || []); // reaktiv
 
 // -----------------
 // Expense Satistics
@@ -16,7 +15,7 @@ const sumExpensesByCategory = (expenses, userName = null) => {
   const categorySums = expenses.reduce((acc, rec) => {
       if (!userName || rec.user.name === userName) {
           const category = rec.category.name;
-          acc[category] = (acc[category] || 0) + calcToEuro(rec.amount, rec.currency, currencies);
+          acc[category] = (acc[category] || 0) + calcToEuro(rec.amount, rec.currency);
       }
       return acc;
   }, {});
@@ -42,7 +41,7 @@ const getUniqueUserNames = (expenses) => {
 
 const totalAmount = (expenses) => {
   // return expenses.reduce((total, expense) => total + expense.amount, 0);
-  return expenses.reduce((total, expense) => total + calcToEuro(expense.amount, expense.currency, currencies), 0);
+  return expenses.reduce((total, expense) => total + calcToEuro(expense.amount, expense.currency), 0);
 };
 
 
@@ -66,16 +65,22 @@ const totalDays = (expenses) => {
 // Helper Functions
 // ----------------
 // calc foreign curreny to Euro
-const calcToEuro = (amount, currency, currencies) => {
+const calcToEuro = (amount, currency) => {
+  const list = currenciesList.value || [];
+  if (!list.length) {
+    // keine Kurse geladen -> Fallback
+    console.warn('calcToEuro: currenciesList empty, returning original amount');
+    return amount;
+  }
 
   const rates = {};
-  currencies.forEach((curr) => {
-    rates[curr.name] = curr.factor;
+  list.forEach((curr) => {
+    rates[curr.name] = Number(curr.factor);
   });
 
   const rate = rates[currency];
 
-  if (rate) {
+  if (rate !== undefined && !Number.isNaN(rate)) {
     return amount * rate;
   } else {
     console.warn(`No exchange rate found for currency: ${currency}`);

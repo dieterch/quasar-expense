@@ -173,10 +173,13 @@ import { parseDateToIso, htmlDialogContent } from 'src/utils/helpers';
 import { useExpenseStore } from "stores/expense-store";
 import { useUserStore } from "stores/user-store";
 import { useCategoryStore } from "stores/category-store";
-import { currencies } from "stores/expense-store";
+import { useCurrencyStore } from "stores/currency-store";
 const expenseStore = useExpenseStore();
 const userStore = useUserStore();
 const categoryStore = useCategoryStore();
+const currencyStore = useCurrencyStore();
+
+const currencies = computed(() => currencyStore.currencies);
 
 const props = defineProps(["selectedTrip", "dialog", "mode", "item"]);
 const emit = defineEmits(["refresh", "dialog"]);
