@@ -9,45 +9,34 @@
       <q-separator />
 
       <q-card-section>
-        <q-table
-          :rows="currencies"
-          :columns="columns"
-          row-key="id"
-          dense
-        >
+        <q-table :rows="currencies" :columns="columns" row-key="name" dense>
           <template v-slot:body-cell-actions="props">
             <q-td align="center">
               <q-btn dense flat icon="edit" color="primary" @click="openDialog(props.row)" />
-              <q-btn dense flat icon="delete" color="negative" @click="onDelete(props.row.id)" />
+              <q-btn dense flat icon="delete" color="negative" @click="onDelete(props.row.name)" />
             </q-td>
           </template>
         </q-table>
       </q-card-section>
     </q-card>
 
-    <CurrencyDialog
-      v-model:showDialog="showDialog"
-      :currency="editedCurrency"
-      @saved="onSaved"
-    />
+    <CurrenciesDialog v-model:showDialog="showDialog" :currency="editedCurrency" @saved="onSaved" />
   </q-page>
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
-//import { useCurrencyStore } from "src/stores/currency-store";
-import { useCurrencyMockStore } from "src/stores/currency-mock-store";
-import CurrencyDialog from "src/components/CurrencyDialog.vue";
+import { ref, computed, onMounted } from "vue";
+import { useCurrencyStore } from "src/stores/currency-store";
+import CurrenciesDialog from "src/components/CurrenciesDialog.vue";
 
-// const store = useCurrencyStore();
-const store = useCurrencyMockStore();
+const store = useCurrencyStore();
 const showDialog = ref(false);
 const editedCurrency = ref(null);
 
 const columns = computed(() => [
   { name: "name", label: "Name", field: "name", align: "left" },
   { name: "symbol", label: "Symbol", field: "symbol", align: "left" },
-  { name: "factor", label: "Factor", field: "factor", align: "right", format: (v) => Number(v).toFixed(2) },
+  { name: "factor", label: "Factor", field: "factor", align: "right", format: (v) => Number(v).toFixed(3) },
   { name: "actions", label: "Actions", field: "actions", align: "center" },
 ]);
 
@@ -58,18 +47,20 @@ const openDialog = (row = null) => {
   showDialog.value = true;
 };
 
-const onDelete = async (id) => {
+const onDelete = async (name) => {
   if (!confirm("Delete currency?")) return;
-  await store.deleteCurrency(id);
+  await store.deleteCurrency(name, { persist: false }); // persist: false = nur lokal
 };
 
 const onSaved = async () => {
-  // store already refreshed in request; close dialog if still open
   showDialog.value = false;
+  // falls du persist möchtest: await store.saveToServer();
 };
 
-store.getCurrencies();
+onMounted(async () => {
+  // await store.loadFromToml(); // lädt /public/currencies.toml
+  await store.getCurrencies();
+});
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

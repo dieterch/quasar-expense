@@ -1,46 +1,41 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
+import { parse } from "toml"; // browserfreundlich
 
-// Mock-Daten
-const initialCurrencies = [
-  { name: "USD", symbol: "$", factor: 0.92 },
-  { name: "GBP", symbol: "£", factor: 1.23 },
-  { name: "EUR", symbol: "€", factor: 1.0 }, // Bezugswährung
-];
+export const useCurrencyStore = defineStore("currency", () => {
+  const currencies = ref([]);
 
-export const useCurrencyMockStore = defineStore("currency-mock", () => {
-  const currencies = ref(initialCurrencies.map((c) => ({ ...c })));
-
-  const getCurrencies = async () => {
-    // Simuliere asynchrone API
-    return new Promise((resolve) => {
-      resolve(currencies.value);
-    });
-  };
-
-  // method: 'POST' = create, 'PUT' = update
-  const requestCurrency = async (method, payload) => {
-    if (method === "POST") {
-      // Vermeide Duplikate nach name
-      if (!currencies.value.find((c) => c.name === payload.name)) {
-        currencies.value.push({ ...payload });
-      }
-    } else if (method === "PUT") {
-      const idx = currencies.value.findIndex((c) => c.name === payload.name);
-      if (idx !== -1) {
-        currencies.value[idx] = { ...currencies.value[idx], ...payload };
-      } else {
-        // falls noch nicht vorhanden, anfügen
-        currencies.value.push({ ...payload });
-      }
+  // Lade currencies.toml aus /public
+  const loadFromToml = async (path = "/currencies.toml") => {
+    try {
+      console.log("loadFromToml: fetching", path);
+      const res = await fetch(path);
+      if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`);
+      const txt = await res.text();
+      // parse mit 'toml' (parse liefert ein Objekt)
+      const parsed = parse(txt);
+      const list = parsed.currencies || parsed;
+      currencies.value = Array.isArray(list) ? list : Object.values(list || {});
+      console.log("loadFromToml: parsed currencies", currencies.value);
+      return currencies.value;
+    } catch (err) {
+      console.error("loadFromToml:", err);
+      return currencies.value;
     }
-    return currencies.value;
   };
 
-  // Löschen nach name
+  // CRUD lokal (optional: send to server endpoint)
+  const createCurrency = async (item) => {
+    currencies.value.push({ ...item });
+  };
+
+  const updateCurrency = async (name, patch) => {
+    const idx = currencies.value.findIndex((c) => c.name === name);
+    if (idx !== -1) currencies.value[idx] = { ...currencies.value[idx], ...patch };
+  };
+
   const deleteCurrency = async (name) => {
     currencies.value = currencies.value.filter((c) => c.name !== name);
-    return currencies.value;
   };
 
   const currencyOptions = computed(() =>
@@ -49,8 +44,9 @@ export const useCurrencyMockStore = defineStore("currency-mock", () => {
 
   return {
     currencies,
-    getCurrencies,
-    requestCurrency,
+    loadFromToml,
+    createCurrency,
+    updateCurrency,
     deleteCurrency,
     currencyOptions,
   };
