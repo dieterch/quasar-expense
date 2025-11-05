@@ -298,6 +298,37 @@ const onReset = () => {
 };
 
 /////////////////////////////////////////
+// {
+//     "amount": 112,
+//     "date": "2025-11-05T00:00:00.000Z",
+//     "location": "",
+//     "description": "test",
+//     "trip": {
+//       "connect": {
+//         "id": "2d11aa3e-8a13-4cd0-ab0c-2e09c807a6f9"
+//       }
+//     },
+//     "user": {
+//       "connect": {
+//         "id": "f396dc66-1674-407c-96ad-b6ca5e11b7b7"
+//       }
+//     },
+//     "category": {
+//       "connect": {
+//         "id": "3ec8a6c4-f89d-4ef0-916f-bf604f1713b4"
+//       }
+//     },
+//     "currencyRef": {
+//       "connect": {
+//         "name": "USD"
+//       }
+//     }
+// }
+
+
+
+
+
 const handleForm = async (method) => {
   if (!isFormValid.value) return;
   let payload = {};
@@ -307,11 +338,12 @@ const handleForm = async (method) => {
       amount: parseFloat(lexpense.value.amount),
       date: parseDateToIso(lexpense.value.date),
       location: "",
-      currency: lexpense.value.currency.name,
+      // currency: lexpense.value.currency.name,
       description: lexpense.value.description,
       trip: { connect: { id: props.selectedTrip.id } },
       user: { connect: { id: lexpense.value.user.id } },
       category: { connect: { id: lexpense.value.category.id } },
+      currencyRef: { connect: { name: lexpense.value.currency.name } },
     };
   }
 
@@ -321,11 +353,12 @@ const handleForm = async (method) => {
       amount: parseFloat(lexpense.value.amount),
       date: parseDateToIso(lexpense.value.date),
       location: "",
-      currency: lexpense.value.currency.name,
+      // currency: lexpense.value.currency.name,
       description: lexpense.value.description,
       trip: { connect: { id: props.selectedTrip.id } },
       user: { connect: { id: lexpense.value.user.id } },
       category: { connect: { id: lexpense.value.category.id } },
+      currencyRef: { connect: { name: lexpense.value.currency } },
     };
   }
 
