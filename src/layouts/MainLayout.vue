@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh Lpr fFf">
     <q-img
-      src="background6.png"
+      src="background3.jpg"
       class="fit absolute"
     />
     <q-header elevated class="bg-primary" >
